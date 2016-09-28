@@ -1,0 +1,29 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Alquerque Game</title>
+  <meta name="description" content="Alquerque Game">
+  <meta name="author" content="Boris Gallet, Benoit Rospars">
+
+  <link rel="stylesheet" href="css/style.css?v=1.0">
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <svg id="board"></svg>
+
+  <script src="lib/snap.svg-min.js"></script>
+  <script src="js/Board.js"></script>
+  <script>
+    var board = new Board(5);
+    board.init();
+    board.drawBoard("board");
+  </script>
+</body>
+</html>
