@@ -1,0 +1,27 @@
+/* 
+* @author Boris Gallet, Benoit Rospars
+* @subject Master WIC 2016 AI Project
+* 
+*
+* @description
+* 
+*/
+
+var Pawn = function(color,x,y,coordX,coordY){
+  this.color = color;
+  this.x = x;
+  this.y = y;
+  this.coordX = coordX;
+  this.coordY = coordY;
+  
+  this.drawnPawn();
+};
+
+Pawn.prototype.getCoordinates = function(){
+ return [this.x, this.y]; 
+}
+
+Pawn.prototype.drawnPawn = function(){
+  svg.circle(this.coordX, this.coordY, 40)
+    .attr({strokeWidth:3, stroke:"black",fill:this.color,strokeLinecap:"round"});
+}

@@ -7,8 +7,9 @@
 * The Board class describe the object representing the game board
 */
 
-var Board = function(size){
+var Board = function(size,elementID){
     this.board = [];
+    this.elementID = elementID;
     this.size = size;
     this.movesVector = {
       'NORTH' : { x: 0, y: 1},
@@ -19,7 +20,9 @@ var Board = function(size){
       'NORTHWEST' : { x: -1, y: 1},
       'SOUTHEAST' : { x: 1, y: -1},
       'SOUTHWEST' : { x: -1, y: -1}
-    };    
+    };
+    
+    this.init();
 };
 
 Board.prototype.init = function(){
@@ -89,16 +92,14 @@ Board.prototype.init = function(){
             this.board.push(node);
         }
     }
+    
+    this.drawBoard();
 
 };
 
-Board.prototype.drawBoard = function(elementID){
-  if(!typeof Snap == 'function'){
-    throw new Error("Error : Snap is not defined");
-  }
-
-  var svg = Snap('#'+elementID);
-  var element = document.getElementById(elementID);
+Board.prototype.drawBoard = function(){
+  
+  var element = document.getElementById(this.elementID);
   var width = element.getBoundingClientRect().width;
   var height = element.getBoundingClientRect().height;
   var offset = parseInt(this.size/2);
@@ -107,10 +108,14 @@ Board.prototype.drawBoard = function(elementID){
     var node = this.board[i];
     var coordX = (node.x + offset)*((width-width*0.2)/(this.size-1))+width*0.1;
     var coordY = (node.y + offset)*((height-height*0.2)/(this.size-1))+height*0.1;
+    
+    node.coordX = coordX;
+    node.coordY = coordY;
 
-    svg.circle(coordX, coordY, 10);
+    svg.circle(coordX, coordY, 18).attr({fill:"grey"});
     
     var moves = this.board[i].moves;
+
 
     for(var key in moves) {
       if(moves[key]){
@@ -118,12 +123,11 @@ Board.prototype.drawBoard = function(elementID){
         var coordY_2 = coordY + this.movesVector[key].y * ( (height-height*0.2) / (this.size-1) );
 
         svg.line(coordX, coordY, coordX_2, coordY_2)
-            .attr({strokeWidth:5,stroke:"black",strokeLinecap:"round"});
+            .attr({strokeWidth:5,stroke:"grey",strokeLinecap:"round"});
       }
     }
     
   }
-
 };
 
 
