@@ -12,29 +12,30 @@ var Board = function(size,elementID){
     this.elementID = elementID;
     this.size = size;
     this.movesVector = {
-      'NORTH' : { x: 0, y: 1},
-      'EAST' : { x: 1, y: 0},
-      'SOUTH' : { x: 0, y: -1},
-      'WEST' : { x: -1, y: 0},
-      'NORTHEAST' : { x: 1, y: 1},
-      'NORTHWEST' : { x: -1, y: 1},
-      'SOUTHEAST' : { x: 1, y: -1},
-      'SOUTHWEST' : { x: -1, y: -1}
+      'NORTH' : { x: -1, y: 0},
+      'EAST' : { x: 0, y: 1},
+      'SOUTH' : { x: 1, y: 0},
+      'WEST' : { x: 0, y: -1},
+      'NORTHEAST' : { x: -1, y: 1},
+      'NORTHWEST' : { x: -1, y: -1},
+      'SOUTHEAST' : { x: 1, y: 1},
+      'SOUTHWEST' : { x: 1, y: -1}
     };
     
     this.init();
 };
 
 Board.prototype.init = function(){
-    var max = parseInt(this.size/2);
-    var min = -parseInt(this.size/2);
+    var max = this.size-1;
+    var min = 0;
 
     for(var i=0;i<this.size;i++){
+        this.board.push([]);
         for(var j=0;j<this.size;j++){
             // node coordinate
             var node = {
-                'x': j-max,
-                'y': i-max
+                'x': i,
+                'y': j
             };
 
             // node allowed moves
@@ -51,36 +52,36 @@ Board.prototype.init = function(){
             
 
             // check if NORTHEAST and SOUTHWEST are allowed in these coordinates
-            if(node.x == node.y || node.x == node.y-2 || node.x == node.y+2){
-              if(node.x < max && node.y < max){
+            if(node.x == (-node.y+max) || node.x == (-node.y+max)-2 || node.x == (-node.y+max)+2){
+              if(node.x > min && node.y < max){
                 moves.NORTHEAST = true;
               }
-              if(node.x > min && node.y > min){
+              if(node.x < max && node.y > min){
                 moves.SOUTHWEST = true;
               }
             }
 
             // check if NORTHWEST and SOUTHEAST are allowed in these coordinates
-            if(node.x == -node.y || node.x == -node.y-2 || node.x == -node.y+2){
-              if(node.x < max && node.y > min){
+            if(node.x == node.y || node.x == node.y+2 || node.x == node.y-2){
+              if(node.x < max && node.y < max){
                 moves.SOUTHEAST = true;
               }
-              if(node.x > min && node.y < max){
+              if(node.x > min && node.y > 0){
                 moves.NORTHWEST = true;
               }
             }
 
             // check NORTH, EAST, SOUTH, WEST are allowed in these coordinates
-            if(node.x < max){
+            if(node.y < max){
               moves.EAST = true;
             }
-            if(node.x > min){
+            if(node.y > min){
               moves.WEST = true;
             }
-            if(node.y < max){
+            if(node.x > min){
               moves.NORTH = true;
             }
-            if(node.y > min){
+            if(node.x < max){
               moves.SOUTH = true;
             }
             
@@ -89,7 +90,7 @@ Board.prototype.init = function(){
             node.moves = moves;
             
             // add node to the board
-            this.board.push(node);
+            this.board[i].push(node);
         }
     }
     
@@ -100,33 +101,33 @@ Board.prototype.init = function(){
 Board.prototype.drawBoard = function(){
   
   var element = document.getElementById(this.elementID);
-  var width = element.getBoundingClientRect().width;
-  var height = element.getBoundingClientRect().height;
-  var offset = parseInt(this.size/2);
+  var width = element.getBoundingClientRect().width-160;
+  var height = element.getBoundingClientRect().height-160;
   
-  for(var i=0;i<this.board.length;i++){
-    var node = this.board[i];
-    var coordX = (node.x + offset)*((width-width*0.2)/(this.size-1))+width*0.1;
-    var coordY = (node.y + offset)*((height-height*0.2)/(this.size-1))+height*0.1;
-    
-    node.coordX = coordX;
-    node.coordY = coordY;
+  for(var i=0;i<this.size;i++){
+    for(var j=0;j<this.size;j++){
+      var node = this.board[i][j];
+      var coordX = node.x*(width/(this.size-1))+80;
+      var coordY = node.y*(height/(this.size-1))+80;
+      
+      node.coordX = coordX;
+      node.coordY = coordY;
 
-    svg.circle(coordX, coordY, 18).attr({fill:"grey"});
-    
-    var moves = this.board[i].moves;
+      svg.circle(coordX, coordY, 18).attr({fill:"grey"});
+      
+      var moves = this.board[i][j].moves;
 
 
-    for(var key in moves) {
-      if(moves[key]){
-        var coordX_2 = coordX + this.movesVector[key].x * ( (width-width*0.2) / (this.size-1) );
-        var coordY_2 = coordY + this.movesVector[key].y * ( (height-height*0.2) / (this.size-1) );
+      for(var key in moves) {
+        if(moves[key]){
+          var coordX_2 = coordX + this.movesVector[key].x * ( (width-width*0.2) / (this.size-1) );
+          var coordY_2 = coordY + this.movesVector[key].y * ( (height-height*0.2) / (this.size-1) );
 
-        svg.line(coordX, coordY, coordX_2, coordY_2)
-            .attr({strokeWidth:5,stroke:"grey",strokeLinecap:"round"});
+          svg.line(coordX, coordY, coordX_2, coordY_2)
+              .attr({strokeWidth:5,stroke:"grey",strokeLinecap:"round"});
+        }
       }
     }
-    
   }
 };
 
