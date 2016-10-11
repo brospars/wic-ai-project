@@ -149,21 +149,25 @@ Board.prototype.getNearestNode = function(x,y){
   return nearestNode;
 };
 
-Board.prototype.movePawnFromNode = function(drawPawn,newNode){
-  var oldNode = null;
+Board.prototype.movePawnFromNode = function(oldNode,newNode){
+  newNode.pawn = oldNode.pawn;
+  delete oldNode.pawn;
+};
+
+Board.prototype.getNodeByCoordinates = function(coordX,coordY){
+  var node = null;
 
   for(var i=0;i<this.size;i++){
     for(var j=0;j<this.size;j++){
-      var node = this.board[i][j];
+      var n = this.board[i][j];
 
-      if(node.coordX == drawPawn.data("ox") && node.coordY == drawPawn.data("oy")){
-        oldNode = node;
+      if(n.coordX == coordX && n.coordY == coordY){
+        node = n;
       }
     }
   }
 
-  newNode.pawn = oldNode.pawn;
-  delete oldNode.pawn;
+  return node;
 };
 
 

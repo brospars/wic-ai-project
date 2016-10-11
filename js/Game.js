@@ -12,45 +12,62 @@ var Game = function(){
   this.gameboard = null;
   this.whitePawns = [];
   this.blackPawns = [];
+  this.currentTurn = "WHITE";
   this.init();
 };
 
 Game.prototype.init = function(){
-    this.gameboard = new Board(5,"board");
-    var board = this.gameboard.board;
-    
-    
-    for(var i=0;i<this.size;i++){
-      for(var j=0;j<this.size;j++){
-        if(j<board.length/2-1 || (j<board.length/2 && i<board.length/2-1)){
-          //create white pawn at coordinate
-          var pawn = new Pawn("WHITE",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
-          //add pawn to the board
-          board[i][j].pawn = pawn;
-          //add pawn to white pawns list
-          this.whitePawns.push(pawn);
-          //Start listening for move action
-          pawn.drawnPawn.drag(move, start, stop );
-        }
-        if(j>board.length/2 || (j>board.length/2-1 && i>board.length/2)){
-          //create black pawn at coordinate
-          var pawn = new Pawn("BLACK",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
-          //add pawn to the board
-          board[i][j].pawn = pawn;
-          //add pawn to black pawns list
-          this.blackPawns.push(pawn);
-          //Start listening for move action
-          pawn.drawnPawn.drag(move, start, stop );
-        }
+  this.gameboard = new Board(5,"board");
+  var board = this.gameboard.board;
+  
+  
+  for(var i=0;i<this.size;i++){
+    for(var j=0;j<this.size;j++){
+      if(j<board.length/2-1 || (j<board.length/2 && i<board.length/2-1)){
+        //create white pawn at coordinate
+        var pawn = new Pawn("WHITE",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
+        //add pawn to the board
+        board[i][j].pawn = pawn;
+        //add pawn to white pawns list
+        this.whitePawns.push(pawn);
+        //Start listening for move action
+        pawn.drawnPawn.drag(move, start, stop );
+      }
+      if(j>board.length/2 || (j>board.length/2-1 && i>board.length/2)){
+        //create black pawn at coordinate
+        var pawn = new Pawn("BLACK",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
+        //add pawn to the board
+        board[i][j].pawn = pawn;
+        //add pawn to black pawns list
+        this.blackPawns.push(pawn);
+        //Start listening for move action
+        pawn.drawnPawn.drag(move, start, stop );
       }
     }
+  }
 
-    console.log(board);
+  console.log(board);
 };
 
-Game.prototype.getAllowedMoves = function(pawn){
-  var board = gameboard.board;
-  return [];
+Game.prototype.isMoveAllowed = function(oldNode,newNode){
+  var board = this.gameboard.board;
+
+  if(!newNode || newNode.pawn){
+    console.log("Node does not exist or is occupied");
+    return false;
+  }
+  if(oldNode.pawn.color != this.currentTurn){
+    console.log("Pawn is "+oldNode.pawn.color+" current turn is "+this.currentTurn);
+    return false;
+  }
+
+
+  return true;
+};
+
+Game.prototype.endTurn = function(oldNode,newNode){
+  this.gameboard.movePawnFromNode(oldNode,newNode);
+  this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
 };
 
 
@@ -69,11 +86,15 @@ var start = function() {
 }
 var stop = function() {
   var nearestNode = game.gameboard.getNearestNode(this.attr("cx"),this.attr("cy"));
-  if(nearestNode && !nearestNode.pawn){
+  var oldNode = game.gameboard.getNodeByCoordinates(this.data("ox"),this.data("oy"));
+
+  //If move allowed then move to nearest and end turn
+  if(game.isMoveAllowed(oldNode,nearestNode)){
     this.animate({ cx: nearestNode.coordX,cy: nearestNode.coordY }, 200);
-    game.gameboard.movePawnFromNode(this,nearestNode);
+    game.endTurn(oldNode,nearestNode);
+  //Else return to oldNode
   }else{
-    this.animate({ cx: this.data("ox"),cy: this.data("oy") }, 200);
+    this.animate({ cx: oldNode.coordX,cy: oldNode.coordY }, 200);
   }
   
 }
