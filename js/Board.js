@@ -131,6 +131,41 @@ Board.prototype.drawBoard = function(){
   }
 };
 
+Board.prototype.getNearestNode = function(x,y){
+  var minDistance = 99999;
+  var nearestNode = null;
+
+  for(var i=0;i<this.size;i++){
+    for(var j=0;j<this.size;j++){
+      var node = this.board[i][j];
+      var distance = Math.sqrt(Math.pow(node.coordX-x,2)+Math.pow(node.coordY-y,2));
+      if(distance < minDistance){
+        minDistance = distance;
+        nearestNode = node;
+      }
+    }
+  }
+
+  return nearestNode;
+};
+
+Board.prototype.movePawnFromNode = function(drawPawn,newNode){
+  var oldNode = null;
+
+  for(var i=0;i<this.size;i++){
+    for(var j=0;j<this.size;j++){
+      var node = this.board[i][j];
+
+      if(node.coordX == drawPawn.data("ox") && node.coordY == drawPawn.data("oy")){
+        oldNode = node;
+      }
+    }
+  }
+
+  newNode.pawn = oldNode.pawn;
+  delete oldNode.pawn;
+};
+
 
 
 

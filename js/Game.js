@@ -10,6 +10,8 @@
 var Game = function(){
   this.size = 5;
   this.gameboard = null;
+  this.whitePawns = [];
+  this.blackPawns = [];
   this.init();
 };
 
@@ -21,21 +23,34 @@ Game.prototype.init = function(){
     for(var i=0;i<this.size;i++){
       for(var j=0;j<this.size;j++){
         if(j<board.length/2-1 || (j<board.length/2 && i<board.length/2-1)){
+          //create white pawn at coordinate
           var pawn = new Pawn("WHITE",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
+          //add pawn to the board
           board[i][j].pawn = pawn;
+          //add pawn to white pawns list
+          this.whitePawns.push(pawn);
+          //Start listening for move action
           pawn.drawnPawn.drag(move, start, stop );
         }
         if(j>board.length/2 || (j>board.length/2-1 && i>board.length/2)){
+          //create black pawn at coordinate
           var pawn = new Pawn("BLACK",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
+          //add pawn to the board
           board[i][j].pawn = pawn;
+          //add pawn to black pawns list
+          this.blackPawns.push(pawn);
+          //Start listening for move action
           pawn.drawnPawn.drag(move, start, stop );
         }
       }
     }
+
+    console.log(board);
 };
 
 Game.prototype.getAllowedMoves = function(pawn){
   var board = gameboard.board;
+  return [];
 };
 
 
@@ -53,6 +68,12 @@ var start = function() {
   this.data("oy", this.attr("cy") );
 }
 var stop = function() {
-  console.log('finished dragging');
+  var nearestNode = game.gameboard.getNearestNode(this.attr("cx"),this.attr("cy"));
+  if(nearestNode && !nearestNode.pawn){
+    this.animate({ cx: nearestNode.coordX,cy: nearestNode.coordY }, 200);
+    game.gameboard.movePawnFromNode(this,nearestNode);
+  }else{
+    this.animate({ cx: this.data("ox"),cy: this.data("oy") }, 200);
+  }
   
 }
