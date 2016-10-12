@@ -21,23 +21,23 @@ Game.prototype.init = function(){
   var board = this.gameboard.board;
 
 
-  for(var i=0;i<this.size;i++){
-    for(var j=0;j<this.size;j++){
-      if(j<board.length/2-1 || (j<board.length/2 && i<board.length/2-1)){
+  for(var y=0;y<this.size;y++){
+    for(var x=0;x<this.size;x++){
+      if(y<board.length/2-1 || (y<board.length/2 && x<board.length/2-1)){
         //create white pawn at coordinate
-        var pawn = new Pawn("WHITE",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
+        var pawn = new Pawn("WHITE",board[y][x].coordX,board[y][x].coordY);
         //add pawn to the board
-        board[i][j].pawn = pawn;
+        board[y][x].pawn = pawn;
         //add pawn to white pawns list
         this.whitePawns.push(pawn);
         //Start listening for move action
         pawn.drawnPawn.drag(move, start, stop );
       }
-      if(j>board.length/2 || (j>board.length/2-1 && i>board.length/2)){
+      if(y>board.length/2 || (y>board.length/2-1 && x>board.length/2)){
         //create black pawn at coordinate
-        var pawn = new Pawn("BLACK",board[i][j].x,board[i][j].y,board[i][j].coordX,board[i][j].coordY);
+        var pawn = new Pawn("BLACK",board[y][x].coordX,board[y][x].coordY);
         //add pawn to the board
-        board[i][j].pawn = pawn;
+        board[y][x].pawn = pawn;
         //add pawn to black pawns list
         this.blackPawns.push(pawn);
         //Start listening for move action
@@ -51,19 +51,21 @@ Game.prototype.init = function(){
 };
 
 Game.prototype.isMoveAllowed = function(oldNode,newNode){
+  console.log(oldNode,newNode);
   // check if the node is empty
   if(!newNode || newNode.pawn){
     console.log("Node does not exist or is occupied");
     return false;
   }
+  
   // check if the moved pawn is the color of the current turn
   if(oldNode.pawn.color != this.currentTurn){
     console.log("Pawn is "+oldNode.pawn.color+" current turn is "+this.currentTurn);
     return false;
   }
+  
   // check if the newNode is a neighbour of oldNode and if the path is allowed
   var direction = this.gameboard.getPathBetweenNodes(oldNode,newNode);
-  console.log(direction);
   if (direction == false){
     console.log("This move is not allowed ...  ");
     return false;
@@ -71,13 +73,15 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
     //check if the pawn between is a different team color
     var testNodeDirection = direction.replace("TAKE", "");
     var directionVector = this.gameboard.movesVector[testNodeDirection];
-    var toBeEatenNode = this.gameboard.board[oldNode.x + directionVector.x][oldNode.y + directionVector.y];
-
+    var toBeEatenNode = this.gameboard.board[oldNode.y + directionVector.y][oldNode.x + directionVector.x];
+    
+    console.log(toBeEatenNode.pawn,oldNode.pawn);
+    
     if(toBeEatenNode.pawn && toBeEatenNode.pawn.color != oldNode.pawn.color){
       toBeEatenNode.pawn.drawnPawn.remove();
       delete toBeEatenNode.pawn;
     } else {
-      console.log("You don't have the right to eat your own pawns !")
+      console.log("You don't have the right to eat your own pawns !");
       return false;
     }
 
@@ -89,9 +93,9 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
 Game.prototype.getAllPossibleMoves = function () {
   var allPossiblesMoves = [];
   //for each node for the current team we look for all the possible moves
-  for(var i=0;i<this.size;i++){
-    for(var j=0;j<this.size;j++){
-      var currentNode = this.gameboard.board[i][j];
+  for(var y=0;y<this.size;y++){
+    for(var x=0;x<this.size;x++){
+      var currentNode = this.gameboard.board[y][x];
       if(currentNode.pawn && currentNode.pawn.color == this.currentTurn){
         var currentNodePawnMoves = this.getNodePawnPossibleMoves(currentNode, false);
         if(currentNodePawnMoves.length>0){
@@ -110,7 +114,7 @@ Game.prototype.getNodePawnPossibleMoves = function(node, isBounce) {
   for(var direction in node.moves){
     if(node.moves[direction]){
       var directionVector = this.gameboard.movesVector[direction];
-      var targetNode = this.gameboard.board[node.x + directionVector.x][node.y + directionVector.y];
+      var targetNode = this.gameboard.board[node.y + directionVector.y][node.x + directionVector.x];
       if(direction.indexOf("TAKE")==-1 && !isBounce){
         if(!targetNode.pawn){
           nodePawnPossibleMoves.push(targetNode);
@@ -119,7 +123,7 @@ Game.prototype.getNodePawnPossibleMoves = function(node, isBounce) {
         // check if the pawn between is a different color pawn
         var testNodeDirection = direction.replace("TAKE", "");
         var directionEatVector = this.gameboard.movesVector[testNodeDirection];
-        var toBeEatenNode = this.gameboard.board[node.x + directionEatVector.x][node.y + directionEatVector.y];
+        var toBeEatenNode = this.gameboard.board[node.y + directionEatVector.y][node.x + directionEatVector.x];
 
         if(toBeEatenNode.pawn && toBeEatenNode.pawn.color != node.pawn.color){
           //nodePawnPossibleMoves.push(targetNode);
