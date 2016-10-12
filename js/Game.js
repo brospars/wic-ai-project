@@ -66,7 +66,20 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
     console.log("This move is not allowed ...  ");
     return false;
   } else if (direction.indexOf("TAKE")!=-1) {
-    //check if the pawn between is a different team color 
+    //check if the pawn between is a different team color
+    var testNodeDirection = direction.replace("TAKE", "");
+    var directionVector = this.gameboard.movesVector[testNodeDirection];
+    console.log(directionVector);
+    var toBeEatenNode = this.gameboard.board[oldNode.x + directionVector.x][oldNode.y + directionVector.y];
+    console.log(toBeEatenNode);
+    if(toBeEatenNode.pawn && toBeEatenNode.color != oldNode.pawn.color){
+      toBeEatenNode.pawn.drawnPawn.remove();
+      delete toBeEatenNode.pawn;
+    } else {
+      console.log("You don't have the right to eat your own pawns !")
+      return false;
+    }
+
   }
   return true;
 };
