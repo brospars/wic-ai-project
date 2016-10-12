@@ -1,10 +1,10 @@
-/* 
+/*
 * @author Boris Gallet, Benoit Rospars
 * @subject Master WIC 2016 AI Project
-* 
+*
 *
 * @description
-* 
+*
 */
 
 var Game = function(){
@@ -19,8 +19,8 @@ var Game = function(){
 Game.prototype.init = function(){
   this.gameboard = new Board(5,"board");
   var board = this.gameboard.board;
-  
-  
+
+
   for(var i=0;i<this.size;i++){
     for(var j=0;j<this.size;j++){
       if(j<board.length/2-1 || (j<board.length/2 && i<board.length/2-1)){
@@ -50,21 +50,28 @@ Game.prototype.init = function(){
 };
 
 Game.prototype.isMoveAllowed = function(oldNode,newNode){
-  var board = this.gameboard.board;
-
+  // check if the node is empty
   if(!newNode || newNode.pawn){
     console.log("Node does not exist or is occupied");
     return false;
   }
+  // check if the moved pawn is the color of the current turn
   if(oldNode.pawn.color != this.currentTurn){
     console.log("Pawn is "+oldNode.pawn.color+" current turn is "+this.currentTurn);
     return false;
   }
-
-
+  // check if the newNode is a neighbour of oldNode and if the path is allowed
+  var direction = this.gameboard.getPathBetweenNodes(oldNode,newNode);
+  if (direction == false){
+    console.log("This move is not allowed ...  ");
+    return false;
+  } else if (direction.indexOf("TAKE")!=-1) {
+    //check if the pawn between is a different team color 
+  }
   return true;
 };
 
+// Moving the object pawn in the board array
 Game.prototype.endTurn = function(oldNode,newNode){
   this.gameboard.movePawnFromNode(oldNode,newNode);
   this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
@@ -74,7 +81,7 @@ Game.prototype.endTurn = function(oldNode,newNode){
 
 var move = function(dx,dy) {
   this.attr({
-    cx: parseInt(this.data("ox")) + dx, 
+    cx: parseInt(this.data("ox")) + dx,
     cy: parseInt(this.data("oy")) + dy
   });
 }
@@ -96,5 +103,5 @@ var stop = function() {
   }else{
     this.animate({ cx: oldNode.coordX,cy: oldNode.coordY }, 200);
   }
-  
+
 }

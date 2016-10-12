@@ -1,4 +1,4 @@
-/* 
+/*
 * @author Boris Gallet, Benoit Rospars
 * @subject Master WIC 2016 AI Project
 * @
@@ -19,9 +19,17 @@ var Board = function(size,elementID){
       'NORTHEAST' : { x: -1, y: 1},
       'NORTHWEST' : { x: -1, y: -1},
       'SOUTHEAST' : { x: 1, y: 1},
-      'SOUTHWEST' : { x: 1, y: -1}
+      'SOUTHWEST' : { x: 1, y: -1},
+      'TAKENORTH' : { x: -2, y: 0},
+      'TAKEEAST' : { x: 0, y: 2},
+      'TAKESOUTH' : { x: 2, y: 0},
+      'TAKEWEST' : { x: 0, y: -2},
+      'TAKENORTHEAST' : { x: -2, y: 2},
+      'TAKENORTHWEST' : { x: -2, y: -2},
+      'TAKESOUTHEAST' : { x: 2, y: 2},
+      'TAKESOUTHWEST' : { x: 2, y: -2}
     };
-    
+
     this.init();
 };
 
@@ -47,9 +55,17 @@ Board.prototype.init = function(){
                 'NORTHEAST' : false,
                 'NORTHWEST' : false,
                 'SOUTHEAST' : false,
-                'SOUTHWEST' : false
+                'SOUTHWEST' : false,
+                'TAKENORTH' : false,
+                'TAKEEAST' : false,
+                'TAKESOUTH' : false,
+                'TAKEWEST' : false,
+                'TAKENORTHEAST' : false,
+                'TAKENORTHWEST' : false,
+                'TAKESOUTHEAST' : false,
+                'TAKESOUTHWEST' : false
             };
-            
+
 
             // check if NORTHEAST and SOUTHWEST are allowed in these coordinates
             if(node.x == (-node.y+max) || node.x == (-node.y+max)-2 || node.x == (-node.y+max)+2){
@@ -59,6 +75,12 @@ Board.prototype.init = function(){
               if(node.x < max && node.y > min){
                 moves.SOUTHWEST = true;
               }
+              if(node.x > min+1 && node.y < max-1){
+                moves.TAKENORTHEAST = true;
+              }
+              if(node.x < max-1 && node.y > min+1){
+                moves.TAKESOUTHWEST = true;
+              }
             }
 
             // check if NORTHWEST and SOUTHEAST are allowed in these coordinates
@@ -66,8 +88,14 @@ Board.prototype.init = function(){
               if(node.x < max && node.y < max){
                 moves.SOUTHEAST = true;
               }
-              if(node.x > min && node.y > 0){
+              if(node.x > min && node.y > min){
                 moves.NORTHWEST = true;
+              }
+              if(node.x < max-1 && node.y < max-1){
+                moves.TAKESOUTHEAST = true;
+              }
+              if(node.x > min+1 && node.y > min+1){
+                moves.TAKENORTHWEST = true;
               }
             }
 
@@ -84,37 +112,49 @@ Board.prototype.init = function(){
             if(node.x < max){
               moves.SOUTH = true;
             }
-            
-            
+            if(node.y < max-1){
+              moves.TAKEEAST = true;
+            }
+            if(node.y > min+1){
+              moves.TAKEWEST = true;
+            }
+            if(node.x > min+1){
+              moves.TAKENORTH = true;
+            }
+            if(node.x < max-1){
+              moves.TAKESOUTH = true;
+            }
+
+
             // add moves to the node
             node.moves = moves;
-            
+
             // add node to the board
             this.board[i].push(node);
         }
     }
-    
+
     this.drawBoard();
 
 };
 
 Board.prototype.drawBoard = function(){
-  
+
   var element = document.getElementById(this.elementID);
   var width = element.getBoundingClientRect().width-160;
   var height = element.getBoundingClientRect().height-160;
-  
+
   for(var i=0;i<this.size;i++){
     for(var j=0;j<this.size;j++){
       var node = this.board[i][j];
       var coordX = node.x*(width/(this.size-1))+80;
       var coordY = node.y*(height/(this.size-1))+80;
-      
+
       node.coordX = coordX;
       node.coordY = coordY;
 
       svg.circle(coordX, coordY, 18).attr({fill:"grey"});
-      
+
       var moves = this.board[i][j].moves;
 
 
@@ -170,8 +210,14 @@ Board.prototype.getNodeByCoordinates = function(coordX,coordY){
   return node;
 };
 
-
-
-
-
-
+// return the direction if the move is allowed else return false
+Board.prototype.getPathBetweenNodes = function(oldNode,newNode){
+  var moveX = newNode.x - oldNode.x;
+  var moveY = newNode.y - oldNode.y;
+  for(var k in this.movesVector){
+    if(this.movesVector[k].x == moveX && this.movesVector[k].y == moveY && oldNode.moves[k]){
+      return k;
+    }
+  }
+  return false;
+};
