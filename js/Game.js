@@ -47,6 +47,7 @@ Game.prototype.init = function(){
   }
 
   console.log(board);
+  this.getAllPossibleMoves();
 };
 
 Game.prototype.isMoveAllowed = function(oldNode,newNode){
@@ -62,6 +63,7 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
   }
   // check if the newNode is a neighbour of oldNode and if the path is allowed
   var direction = this.gameboard.getPathBetweenNodes(oldNode,newNode);
+  console.log(direction);
   if (direction == false){
     console.log("This move is not allowed ...  ");
     return false;
@@ -69,10 +71,9 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
     //check if the pawn between is a different team color
     var testNodeDirection = direction.replace("TAKE", "");
     var directionVector = this.gameboard.movesVector[testNodeDirection];
-    console.log(directionVector);
     var toBeEatenNode = this.gameboard.board[oldNode.x + directionVector.x][oldNode.y + directionVector.y];
-    console.log(toBeEatenNode);
-    if(toBeEatenNode.pawn && toBeEatenNode.color != oldNode.pawn.color){
+
+    if(toBeEatenNode.pawn && toBeEatenNode.pawn.color != oldNode.pawn.color){
       toBeEatenNode.pawn.drawnPawn.remove();
       delete toBeEatenNode.pawn;
     } else {
@@ -84,10 +85,62 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
   return true;
 };
 
+// Look for all possible moves for the team
+Game.prototype.getAllPossibleMoves = function () {
+  var allPossiblesMoves = [];
+  //for each node for the current team we look for all the possible moves
+  for(var i=0;i<this.size;i++){
+    for(var j=0;j<this.size;j++){
+      var currentNode = this.gameboard.board[i][j];
+      if(currentNode.pawn && currentNode.pawn.color == this.currentTurn){
+        var currentNodePawnMoves = this.getNodePawnPossibleMoves(currentNode, false);
+        if(currentNodePawnMoves.length>0){
+          allPossiblesMoves.push({currentNode,currentNodePawnMoves});
+        }
+      }
+    }
+  }
+  console.log(allPossiblesMoves);
+  //return allPossiblesMoves;
+};
+
+//Look for possible moves for a node, recursivly if it's a bounce
+Game.prototype.getNodePawnPossibleMoves = function(node, isBounce) {
+  var nodePawnPossibleMoves = [];
+  for(var direction in node.moves){
+    if(node.moves[direction]){
+      var directionVector = this.gameboard.movesVector[direction];
+      var targetNode = this.gameboard.board[node.x + directionVector.x][node.y + directionVector.y];
+      if(direction.indexOf("TAKE")==-1 && !isBounce){
+        if(!targetNode.pawn){
+          nodePawnPossibleMoves.push(targetNode);
+        }
+      } else {
+        // check if the pawn between is a different color pawn
+        var testNodeDirection = direction.replace("TAKE", "");
+        var directionEatVector = this.gameboard.movesVector[testNodeDirection];
+        var toBeEatenNode = this.gameboard.board[node.x + directionEatVector.x][node.y + directionEatVector.y];
+
+        if(toBeEatenNode.pawn && toBeEatenNode.pawn.color != node.pawn.color){
+          //nodePawnPossibleMoves.push(targetNode);
+          // recursif call to look for another eating moves
+          // this.getNodePawnPossibleMoves(targetNode, true);
+        }
+      }
+    }
+  }
+  return nodePawnPossibleMoves;
+};
+
+Game.prototype.startTurn = function(){
+  this.getAllPossibleMoves();
+}
+
 // Moving the object pawn in the board array
 Game.prototype.endTurn = function(oldNode,newNode){
   this.gameboard.movePawnFromNode(oldNode,newNode);
   this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
+  this.startTurn();
 };
 
 
