@@ -13,6 +13,7 @@ var Game = function(){
   this.whitePawns = [];
   this.blackPawns = [];
   this.currentTurn = "WHITE";
+  this.currentTurnMoves = [];
   this.init();
 };
 
@@ -45,48 +46,36 @@ Game.prototype.init = function(){
       }
     }
   }
-
-  console.log(board);
-  this.getAllPossibleMoves();
+  this.currentTurnMoves = this.getAllPossibleMoves();
+  console.log(this.currentTurnMoves);
 };
 
 Game.prototype.isMoveAllowed = function(oldNode,newNode){
-  console.log(oldNode,newNode);
-  // check if the node is empty
-  if(!newNode || newNode.pawn){
-    console.log("Node does not exist or is occupied");
-    return false;
-  }
   
   // check if the moved pawn is the color of the current turn
   if(oldNode.pawn.color != this.currentTurn){
     console.log("Pawn is "+oldNode.pawn.color+" current turn is "+this.currentTurn);
-    return false;
+    return "ERROR";
   }
-  
-  // check if the newNode is a neighbour of oldNode and if the path is allowed
-  var direction = this.gameboard.getPathBetweenNodes(oldNode,newNode);
-  if (direction == false){
-    console.log("This move is not allowed ...  ");
-    return false;
-  } else if (direction.indexOf("TAKE")!=-1) {
-    //check if the pawn between is a different team color
-    var testNodeDirection = direction.replace("TAKE", "");
-    var directionVector = this.gameboard.movesVector[testNodeDirection];
-    var toBeEatenNode = this.gameboard.board[oldNode.y + directionVector.y][oldNode.x + directionVector.x];
-    
-    console.log(toBeEatenNode.pawn,oldNode.pawn);
-    
-    if(toBeEatenNode.pawn && toBeEatenNode.pawn.color != oldNode.pawn.color){
-      toBeEatenNode.pawn.drawnPawn.remove();
-      delete toBeEatenNode.pawn;
-    } else {
-      console.log("You don't have the right to eat your own pawns !");
-      return false;
-    }
 
+  // check if the moved is contained in currentTurnMoves
+  for(var key in this.currentTurnMoves){
+    if(this.currentTurnMoves[key].currentNode.x == oldNode.x && this.currentTurnMoves[key].currentNode.y == oldNode.y){
+      var targetNodes = this.currentTurnMoves[key].currentNodePawnMoves;
+      for(var index in targetNodes){
+        if(targetNodes[index].targetNode.x == newNode.x && targetNodes[index].targetNode.y == newNode.y){
+          if(targetNodes[index].isEatMove){
+            targetNodes[index].toBeEatenNode.pawn.drawnPawn.remove();
+            delete targetNodes[index].toBeEatenNode.pawn;
+            return "EATMOVE"
+          }
+          return "MOVE";
+        }
+      }
+    }
   }
-  return true;
+  console.log("This move is not allowed");
+  return "ERROR";
 };
 
 // Look for all possible moves for the team
@@ -104,8 +93,7 @@ Game.prototype.getAllPossibleMoves = function () {
       }
     }
   }
-  console.log(allPossiblesMoves);
-  //return allPossiblesMoves;
+  return allPossiblesMoves;
 };
 
 //Look for possible moves for a node, recursivly if it's a bounce
@@ -117,7 +105,7 @@ Game.prototype.getNodePawnPossibleMoves = function(node, isBounce) {
       var targetNode = this.gameboard.board[node.y + directionVector.y][node.x + directionVector.x];
       if(direction.indexOf("TAKE")==-1 && !isBounce){
         if(!targetNode.pawn){
-          nodePawnPossibleMoves.push(targetNode);
+          nodePawnPossibleMoves.push({targetNode:targetNode, isEatMove : false, toBeEatenNode : null});
         }
       } else {
         // check if the pawn between is a different color pawn
@@ -125,10 +113,8 @@ Game.prototype.getNodePawnPossibleMoves = function(node, isBounce) {
         var directionEatVector = this.gameboard.movesVector[testNodeDirection];
         var toBeEatenNode = this.gameboard.board[node.y + directionEatVector.y][node.x + directionEatVector.x];
 
-        if(toBeEatenNode.pawn && toBeEatenNode.pawn.color != node.pawn.color){
-          //nodePawnPossibleMoves.push(targetNode);
-          // recursif call to look for another eating moves
-          // this.getNodePawnPossibleMoves(targetNode, true);
+        if(toBeEatenNode.pawn && !targetNode.pawn && toBeEatenNode.pawn.color != node.pawn.color){
+          nodePawnPossibleMoves.push({targetNode:targetNode, isEatMove : true, toBeEatenNode : toBeEatenNode});
         }
       }
     }
@@ -136,15 +122,35 @@ Game.prototype.getNodePawnPossibleMoves = function(node, isBounce) {
   return nodePawnPossibleMoves;
 };
 
+Game.prototype.getNodeAllPossibleEatMoves = function(node){
+  var nodeAllPossibleEatMoves = this.getNodePawnPossibleMoves(node, true);
+
+  return [{currentNode:node,currentNodePawnMoves:nodeAllPossibleEatMoves}];
+};
+
+
 Game.prototype.startTurn = function(){
-  this.getAllPossibleMoves();
-}
+  this.currentTurnMoves = this.getAllPossibleMoves();
+  console.log(this.currentTurnMoves);
+};
 
 // Moving the object pawn in the board array
-Game.prototype.endTurn = function(oldNode,newNode){
+Game.prototype.endTurn = function(oldNode,newNode,moveType){
   this.gameboard.movePawnFromNode(oldNode,newNode);
-  this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
-  this.startTurn();
+
+  if(moveType == "EATMOVE"){
+    var nodePawnPossibleMoves = this.getNodeAllPossibleEatMoves(newNode);
+    console.log(nodePawnPossibleMoves);
+    if (nodePawnPossibleMoves[0].currentNodePawnMoves.length > 0){
+      this.currentTurnMoves = nodePawnPossibleMoves;
+    } else {
+      this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
+      this.startTurn();
+    }
+  } else {
+    this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
+    this.startTurn();
+  }
 };
 
 
@@ -166,9 +172,11 @@ var stop = function() {
   var oldNode = game.gameboard.getNodeByCoordinates(this.data("ox"),this.data("oy"));
 
   //If move allowed then move to nearest and end turn
-  if(game.isMoveAllowed(oldNode,nearestNode)){
+  var moveType = game.isMoveAllowed(oldNode,nearestNode)
+  if(moveType != "ERROR"){
+    
     this.animate({ cx: nearestNode.coordX,cy: nearestNode.coordY }, 200);
-    game.endTurn(oldNode,nearestNode);
+    game.endTurn(oldNode,nearestNode,moveType);
   //Else return to oldNode
   }else{
     this.animate({ cx: oldNode.coordX,cy: oldNode.coordY }, 200);
