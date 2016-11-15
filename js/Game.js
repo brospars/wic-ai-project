@@ -46,8 +46,7 @@ Game.prototype.init = function(){
       }
     }
   }
-  this.currentTurnMoves = this.getAllPossibleMoves();
-  console.log(this.currentTurnMoves);
+  this.startTurn();
 };
 
 Game.prototype.isMoveAllowed = function(oldNode,newNode){
@@ -132,6 +131,14 @@ Game.prototype.getNodeAllPossibleEatMoves = function(node){
 Game.prototype.startTurn = function(){
   this.currentTurnMoves = this.getAllPossibleMoves();
   console.log(this.currentTurnMoves);
+    var g = this;
+
+  if(iaWhite != undefined && this.currentTurn == "WHITE"){
+    console.log(g);
+    iaWhite.doMove(g);
+  }else if(iaBlack != undefined && this.currentTurn == "BLACK"){
+    iaBlack.doMove(g);
+  }
 };
 
 // Moving the object pawn in the board array
@@ -151,6 +158,16 @@ Game.prototype.endTurn = function(oldNode,newNode,moveType){
     this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
     this.startTurn();
   }
+};
+
+
+Game.prototype.doMove = function(move){
+  move.origin.pawn.drawnPawn.animate({ 
+      cx: move.target.pawn.drawnPawn.coordX,
+      cy: move.target.pawn.drawnPawn.coordY 
+    }, 200);
+  var moveType = game.isMoveAllowed(move.origin,move.target)
+  game.endTurn(move.origin,move.target,moveType);
 };
 
 
