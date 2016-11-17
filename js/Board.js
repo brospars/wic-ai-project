@@ -7,7 +7,13 @@
 * The Board class describe the object representing the game board
 */
 
-var Board = function(size,elementID){
+var Board = function(size,elementID,otherBoard){
+  if (otherBoard) {
+    this.board = JSON.parse(JSON.stringify(otherBoard.board));
+    this.elementID = otherBoard.elementID;
+    this.size = otherBoard.size;
+    this.movesVector = otherBoard.movesVector;
+  } else {
     this.board = [];
     this.elementID = elementID;
     this.size = size;
@@ -31,6 +37,7 @@ var Board = function(size,elementID){
     };
 
     this.init();
+  }
 };
 
 Board.prototype.init = function(){
@@ -219,4 +226,8 @@ Board.prototype.getPathBetweenNodes = function(oldNode,newNode){
     }
   }
   return false;
+};
+
+Board.prototype.clone = function(){
+  return new Board(null,null,this);
 };

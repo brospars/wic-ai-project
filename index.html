@@ -34,10 +34,7 @@
     var game = new Game();
     game.init();
 
-    var original_game = new Game();
-    Object.assign(original_game,game);
-    original_game.gameboard = new Board();
-    Object.assign(original_game.gameboard, game.gameboard);
+    var original_game = game.clone();
   </script>
 </body>
 </html>

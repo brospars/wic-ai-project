@@ -7,14 +7,24 @@
 *
 */
 
-var Game = function(){
-  this.size = 5;
-  this.gameboard = null;
-  this.whitePawns = 0;
-  this.blackPawns = 0;
-  this.countTurn = 1;
-  this.currentTurn = "WHITE";
-  this.currentTurnMoves = [];
+var Game = function(otherGame){
+  if (otherGame) {
+    this.size = otherGame.size;
+    this.gameboard = otherGame.gameboard.clone();
+    this.whitePawns = otherGame.whitePawns;
+    this.blackPawns = otherGame.blackPawns;
+    this.countTurn = otherGame.countTurn;
+    this.currentTurn = otherGame.currentTurn;
+    this.currentTurnMoves = otherGame.currentTurnMoves;
+  } else {
+    this.size = 5;
+    this.gameboard = null;
+    this.whitePawns = 0;
+    this.blackPawns = 0;
+    this.countTurn = 1;
+    this.currentTurn = "WHITE";
+    this.currentTurnMoves = [];
+  }
 };
 
 Game.prototype.init = function(){
@@ -68,9 +78,9 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
             delete targetNodes[index].toBeEatenNode.pawn;
 
             if(this.currentTurn == "WHITE"){
-              this.whitePawns--;
-            }else{
               this.blackPawns--;
+            }else{
+              this.whitePawns--;
             }
 
             return "EATMOVE"
@@ -136,18 +146,18 @@ Game.prototype.getNodeAllPossibleEatMoves = function(node){
 
 
 Game.prototype.startTurn = function(param){
-  console.log(this,original_game);
   if(param != "REBOUND"){
     this.currentTurnMoves = this.getAllPossibleMoves();
   }
+  console.log(this.currentTurnMoves);
   var g = this;
   console.log("Game object startTurn",g);
 
-  /*if(iaWhite != undefined && this.currentTurn == "WHITE"){
-    iaWhite.doMove(g);
+  if(iaWhite != undefined && this.currentTurn == "WHITE"){
+    //iaWhite.doMove(g);
   }else if(iaBlack != undefined && this.currentTurn == "BLACK"){
-    iaBlack.doMove(g);
-  }*/
+    //iaBlack.doMove(g);
+  }
 };
 
 // Moving the object pawn in the board array
@@ -181,6 +191,7 @@ Game.prototype.endTurn = function(oldNode,newNode,moveType){
 
 
 Game.prototype.doMove = function(move){
+  console.log(move);
   move.origin.pawn.drawnPawn.animate({ 
     cx: move.target.coordX,
     cy: move.target.coordY 
@@ -189,9 +200,13 @@ Game.prototype.doMove = function(move){
   var game = this;
 
   setTimeout(function(){
-    var moveType = game.isMoveAllowed(move.origin,move.target)
+    var moveType = game.isMoveAllowed(move.origin,move.target);
     game.endTurn(move.origin,move.target,moveType);
   },10);
+};
+
+Game.prototype.clone = function() {
+  return new Game(this);
 };
 
 
