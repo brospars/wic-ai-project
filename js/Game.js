@@ -10,11 +10,11 @@
 var Game = function(){
   this.size = 5;
   this.gameboard = null;
-  this.whitePawns = [];
-  this.blackPawns = [];
+  this.whitePawns = 0;
+  this.blackPawns = 0;
+  this.countTurn = 1;
   this.currentTurn = "WHITE";
   this.currentTurnMoves = [];
-  this.init();
 };
 
 Game.prototype.init = function(){
@@ -30,7 +30,7 @@ Game.prototype.init = function(){
         //add pawn to the board
         board[y][x].pawn = pawn;
         //add pawn to white pawns list
-        this.whitePawns.push(pawn);
+        this.whitePawns++;
         //Start listening for move action
         pawn.drawnPawn.drag(move, start, stop );
       }
@@ -40,7 +40,7 @@ Game.prototype.init = function(){
         //add pawn to the board
         board[y][x].pawn = pawn;
         //add pawn to black pawns list
-        this.blackPawns.push(pawn);
+        this.blackPawns++;
         //Start listening for move action
         pawn.drawnPawn.drag(move, start, stop );
       }
@@ -66,6 +66,13 @@ Game.prototype.isMoveAllowed = function(oldNode,newNode){
           if(targetNodes[index].isEatMove){
             targetNodes[index].toBeEatenNode.pawn.drawnPawn.remove();
             delete targetNodes[index].toBeEatenNode.pawn;
+
+            if(this.currentTurn == "WHITE"){
+              this.whitePawns--;
+            }else{
+              this.blackPawns--;
+            }
+
             return "EATMOVE"
           }
           return "MOVE";
@@ -128,17 +135,19 @@ Game.prototype.getNodeAllPossibleEatMoves = function(node){
 };
 
 
-Game.prototype.startTurn = function(){
-  this.currentTurnMoves = this.getAllPossibleMoves();
-  console.log(this.currentTurnMoves);
-    var g = this;
+Game.prototype.startTurn = function(param){
+  console.log(this,original_game);
+  if(param != "REBOUND"){
+    this.currentTurnMoves = this.getAllPossibleMoves();
+  }
+  var g = this;
+  console.log("Game object startTurn",g);
 
-  if(iaWhite != undefined && this.currentTurn == "WHITE"){
-    console.log(g);
+  /*if(iaWhite != undefined && this.currentTurn == "WHITE"){
     iaWhite.doMove(g);
   }else if(iaBlack != undefined && this.currentTurn == "BLACK"){
     iaBlack.doMove(g);
-  }
+  }*/
 };
 
 // Moving the object pawn in the board array
@@ -147,27 +156,42 @@ Game.prototype.endTurn = function(oldNode,newNode,moveType){
 
   if(moveType == "EATMOVE"){
     var nodePawnPossibleMoves = this.getNodeAllPossibleEatMoves(newNode);
-    console.log(nodePawnPossibleMoves);
     if (nodePawnPossibleMoves[0].currentNodePawnMoves.length > 0){
       this.currentTurnMoves = nodePawnPossibleMoves;
+      this.startTurn("REBOUND");
     } else {
-      this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
-      this.startTurn();
+      if(this.whitePawns > 0 && this.blackPawns > 0){
+        this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
+        this.countTurn++;
+        this.startTurn();
+      }else{
+        return;
+      }      
     }
   } else {
-    this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
-    this.startTurn();
+    if(this.whitePawns > 0 && this.blackPawns > 0){
+      this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
+      this.countTurn++;
+      this.startTurn();
+    }else{
+      return;
+    }
   }
 };
 
 
 Game.prototype.doMove = function(move){
   move.origin.pawn.drawnPawn.animate({ 
-      cx: move.target.pawn.drawnPawn.coordX,
-      cy: move.target.pawn.drawnPawn.coordY 
-    }, 200);
-  var moveType = game.isMoveAllowed(move.origin,move.target)
-  game.endTurn(move.origin,move.target,moveType);
+    cx: move.target.coordX,
+    cy: move.target.coordY 
+  }, 10);
+
+  var game = this;
+
+  setTimeout(function(){
+    var moveType = game.isMoveAllowed(move.origin,move.target)
+    game.endTurn(move.origin,move.target,moveType);
+  },10);
 };
 
 
