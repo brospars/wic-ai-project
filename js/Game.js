@@ -7,24 +7,14 @@
 *
 */
 
-var Game = function(otherGame){
-  if (otherGame) {
-    this.size = otherGame.size;
-    this.gameboard = otherGame.gameboard.clone();
-    this.whitePawns = otherGame.whitePawns;
-    this.blackPawns = otherGame.blackPawns;
-    this.countTurn = otherGame.countTurn;
-    this.currentTurn = otherGame.currentTurn;
-    this.currentTurnMoves = otherGame.currentTurnMoves;
-  } else {
-    this.size = 5;
-    this.gameboard = null;
-    this.whitePawns = 0;
-    this.blackPawns = 0;
-    this.countTurn = 1;
-    this.currentTurn = "WHITE";
-    this.currentTurnMoves = [];
-  }
+var Game = function(){
+  this.size = 5;
+  this.gameboard = null;
+  this.whitePawns = 0;
+  this.blackPawns = 0;
+  this.countTurn = 1;
+  this.currentTurn = "WHITE";
+  this.currentTurnMoves = [];
 };
 
 Game.prototype.init = function(){
@@ -59,152 +49,116 @@ Game.prototype.init = function(){
   this.startTurn();
 };
 
-Game.prototype.isMoveAllowed = function(oldNode,newNode){
+Game.prototype.getMove = function(origin,target){
   
   // check if the moved pawn is the color of the current turn
-  if(oldNode.pawn.color != this.currentTurn){
-    console.log("Pawn is "+oldNode.pawn.color+" current turn is "+this.currentTurn);
+  if(origin.pawn.color != this.currentTurn){
+    console.log("Pawn is "+origin.pawn.color+" current turn is "+this.currentTurn);
     return "ERROR";
   }
 
   // check if the moved is contained in currentTurnMoves
   for(var key in this.currentTurnMoves){
-    if(this.currentTurnMoves[key].currentNode.x == oldNode.x && this.currentTurnMoves[key].currentNode.y == oldNode.y){
-      var targetNodes = this.currentTurnMoves[key].currentNodePawnMoves;
-      for(var index in targetNodes){
-        if(targetNodes[index].targetNode.x == newNode.x && targetNodes[index].targetNode.y == newNode.y){
-          if(targetNodes[index].isEatMove){
-            targetNodes[index].toBeEatenNode.pawn.drawnPawn.remove();
-            delete targetNodes[index].toBeEatenNode.pawn;
-
-            if(this.currentTurn == "WHITE"){
-              this.blackPawns--;
-            }else{
-              this.whitePawns--;
-            }
-
-            return "EATMOVE"
-          }
-          return "MOVE";
+    if(this.currentTurnMoves[key].origin.x == origin.x && this.currentTurnMoves[key].origin.y == origin.y){
+      var targets = this.currentTurnMoves[key].targets;
+      for(var index in targets){
+        if(targets[index].x == target.x && targets[index].y == target.y){
+          return {
+            origin:this.currentTurnMoves[key].origin,
+            target:this.currentTurnMoves[key].targets[index]
+          };
         }
       }
     }
   }
+  
   console.log("This move is not allowed");
   return "ERROR";
 };
 
-// Look for all possible moves for the team
-Game.prototype.getAllPossibleMoves = function () {
-  var allPossiblesMoves = [];
-  //for each node for the current team we look for all the possible moves
-  for(var y=0;y<this.size;y++){
-    for(var x=0;x<this.size;x++){
-      var currentNode = this.gameboard.board[y][x];
-      if(currentNode.pawn && currentNode.pawn.color == this.currentTurn){
-        var currentNodePawnMoves = this.getNodePawnPossibleMoves(currentNode, false);
-        if(currentNodePawnMoves.length>0){
-          allPossiblesMoves.push({currentNode,currentNodePawnMoves});
-        }
-      }
-    }
+//if IA mode get next move else get possible moves
+Game.prototype.startTurn = function(){
+  if(options.ia){
+    var ia = new IA(options.mode);
+    var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
+    this.doMove(move);
+  }else{
+    this.currentTurnMoves = getTurnPossibleMoves(cloneBoard(this.gameboard.board),this.currentTurn);
   }
-  return allPossiblesMoves;
 };
 
-//Look for possible moves for a node, recursivly if it's a bounce
-Game.prototype.getNodePawnPossibleMoves = function(node, isBounce) {
-  var nodePawnPossibleMoves = [];
-  for(var direction in node.moves){
-    if(node.moves[direction]){
-      var directionVector = this.gameboard.movesVector[direction];
-      var targetNode = this.gameboard.board[node.y + directionVector.y][node.x + directionVector.x];
-      if(direction.indexOf("TAKE")==-1 && !isBounce){
-        if(!targetNode.pawn){
-          nodePawnPossibleMoves.push({targetNode:targetNode, isEatMove : false, toBeEatenNode : null});
-        }
-      } else {
-        // check if the pawn between is a different color pawn
-        var testNodeDirection = direction.replace("TAKE", "");
-        var directionEatVector = this.gameboard.movesVector[testNodeDirection];
-        var toBeEatenNode = this.gameboard.board[node.y + directionEatVector.y][node.x + directionEatVector.x];
-
-        if(toBeEatenNode.pawn && !targetNode.pawn && toBeEatenNode.pawn.color != node.pawn.color){
-          nodePawnPossibleMoves.push({targetNode:targetNode, isEatMove : true, toBeEatenNode : toBeEatenNode});
-        }
-      }
-    }
-  }
-  return nodePawnPossibleMoves;
-};
-
-Game.prototype.getNodeAllPossibleEatMoves = function(node){
-  var nodeAllPossibleEatMoves = this.getNodePawnPossibleMoves(node, true);
-
-  return [{currentNode:node,currentNodePawnMoves:nodeAllPossibleEatMoves}];
-};
-
-
-Game.prototype.startTurn = function(param){
-  if(param != "REBOUND"){
-    this.currentTurnMoves = this.getAllPossibleMoves();
-  }
-
-  var move = IA.calculateNextMove(this.gameboard.board, this.currentTurn);
-
-  //this.doMove(move);
-};
-
-// Moving the object pawn in the board array
-Game.prototype.endTurn = function(oldNode,newNode,moveType){
-  this.gameboard.movePawnFromNode(oldNode,newNode);
-
-  if(moveType == "EATMOVE"){
-    var nodePawnPossibleMoves = this.getNodeAllPossibleEatMoves(newNode);
-    if (nodePawnPossibleMoves[0].currentNodePawnMoves.length > 0){
-      this.currentTurnMoves = nodePawnPossibleMoves;
-      this.startTurn("REBOUND");
-    } else {
-      if(this.whitePawns > 0 && this.blackPawns > 0){
-        this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
-        this.countTurn++;
-        this.startTurn();
-      }else{
-        return;
-      }      
-    }
-  } else {
-    if(this.whitePawns > 0 && this.blackPawns > 0){
-      this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
-      this.countTurn++;
-      this.startTurn();
-    }else{
-      return;
-    }
-  }
+// Change current turn, count it and start new turn
+Game.prototype.endTurn = function(){
+  this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
+  this.countTurn++;
+  this.startTurn();
 };
 
 
 Game.prototype.doMove = function(move){
-  console.log(move);
-  move.origin.pawn.drawnPawn.animate({ 
-    cx: move.target.coordX,
-    cy: move.target.coordY 
-  }, 10);
-
   var game = this;
-
-  setTimeout(function(){
-    var moveType = game.isMoveAllowed(move.origin,move.target);
-    game.endTurn(move.origin,move.target,moveType);
-  },10);
+  var origin = this.gameboard.board[move.origin.y][move.origin.x];
+  var target = this.gameboard.board[move.target.y][move.target.x];
+  
+  origin.pawn.drawnPawn.animate({ 
+    cx: target.coordX,
+    cy: target.coordY 
+  }, options.speed);  
+  
+  this.gameboard.movePawnFromNode(move);
+  
+  if(move.target.isEatMove){
+    if(this.currentTurn == "WHITE"){
+      this.blackPawns = this.blackPawns-1;
+    }else{
+      this.whitePawns= this.whitePawns-1;
+    }    
+    
+    console.log("turn : "+this.countTurn,"w : "+this.whitePawns,"b : "+this.blackPawns);
+    
+    if(this.blackPawns < 1){
+      setTimeout(function(){
+        alert('White Wins');
+      },options.speed);
+      return;
+    }
+    if(this.whitePawns < 1){
+      setTimeout(function(){
+        alert('Blacks Wins');
+      },options.speed);
+      return;
+    }
+    
+    var virtualBoard = cloneBoard(this.gameboard.board);
+    var reboundMoves = {
+      origin:move.target,
+      targets:getPawnPossibleMoves(virtualBoard,target,true)
+    };        
+    
+    if(reboundMoves.targets.length > 0){
+      console.log("REBOUND");
+      if(options.ia){
+        setTimeout(function(){
+          var ia = new IA(options.mode);
+          var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, [reboundMoves]);
+          game.doMove(move);
+        },options.speed*2);        
+      }else{
+        this.currentTurnMoves = getTurnPossibleMoves(cloneBoard(this.gameboard.board),this.currentTurn);
+      }
+    }else{
+      setTimeout(function(){
+        game.endTurn();
+      },options.speed*2);
+    }    
+    
+  }else{
+    setTimeout(function(){
+      game.endTurn();
+    },options.speed*2);
+  }
+  
 };
-
-Game.prototype.clone = function() {
-  return new Game(this);
-};
-
-
 
 var move = function(dx,dy) {
   this.attr({
@@ -214,23 +168,21 @@ var move = function(dx,dy) {
 }
 
 var start = function() {
-  this.data('origTransform', this.transform().local );
+  this.data('origTransform', this.transform().local);
   this.data("ox", this.attr("cx") );
   this.data("oy", this.attr("cy") );
 }
 var stop = function() {
-  var nearestNode = game.gameboard.getNearestNode(this.attr("cx"),this.attr("cy"));
-  var oldNode = game.gameboard.getNodeByCoordinates(this.data("ox"),this.data("oy"));
+  var origin = game.gameboard.getNodeByCoordinates(this.data("ox"),this.data("oy"));
+  var target = game.gameboard.getNearestNode(this.attr("cx"),this.attr("cy"));
 
   //If move allowed then move to nearest and end turn
-  var moveType = game.isMoveAllowed(oldNode,nearestNode)
-  if(moveType != "ERROR"){
-    
-    this.animate({ cx: nearestNode.coordX,cy: nearestNode.coordY }, 200);
-    game.endTurn(oldNode,nearestNode,moveType);
+  var move = game.getMove(origin,target);
+  if(move != "ERROR"){
+    game.doMove(move);
   //Else return to oldNode
   }else{
-    this.animate({ cx: oldNode.coordX,cy: oldNode.coordY }, 200);
+    this.animate({ cx: origin.coordX,cy: origin.coordY }, 200);
   }
 
 }

@@ -1,44 +1,45 @@
 /*
-* @author Boris Gallet, Benoit Rospars
-* @subject Master WIC 2016 AI Project
-*
-*
-* @different IAs
-*
-*
-*/
+ * @author Boris Gallet, Benoit Rospars
+ * @subject Master WIC 2016 AI Project
+ *
+ *
+ * @different IAs
+ *
+ *
+ */
 
-var IA = function(){
+var IA = function (mode) {
+  this.mode = mode;
 };
 
-IA.prototype.init = function(){
+IA.prototype.calculateNextMove = function (board,turn,moves) {
+  var turn = turn;
+  var virtualBoard = cloneBoard(board);
+  var turnPossibleMoves = moves ? moves : getTurnPossibleMoves(virtualBoard,turn);
+
+  if (this.mode == "RANDOM") {
+    return this.getMoveRandom(turnPossibleMoves);
+  } else if (this.mode == "MINMAX") {
+    return this.getMoveMinMax();
+  }
+  
+};
+
+IA.prototype.getMoveRandom = function (turnPossibleMoves) {
+  var indexOrigin = getRandomInt(0,turnPossibleMoves.length);
+  var indexTarget = getRandomInt(0,turnPossibleMoves[indexOrigin].targets.length);
+  return {
+    origin:turnPossibleMoves[indexOrigin].origin,
+    target:turnPossibleMoves[indexOrigin].targets[indexTarget]
+  };
+};
+
+IA.prototype.getMoveMinMax = function () {
 
 };
 
-IA.prototype.calculateNextMove = function(mode, board, turn){
-	var boardClone = cloneBoard(board);
+IA.prototype.simulateTurn = function () {
 
-	if(this.mode == "DEBILE"){
-		return this.getMoveDebile(boardClone);
-	}else if(this.mode == "MINMAX"){
-		return this.getMoveMinMax(boardClone,4);
-	}
 };
 
-IA.prototype.getMoveDebile = function(board){
-	
-}
 
-IA.prototype.getMoveMinMax = function(board, profondeur){
-	
-}
-
-IA.prototype.simulateTurn = function(game,oldNode,newNode){
-	
-};
-
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min;
-}

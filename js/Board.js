@@ -7,44 +7,13 @@
 * The Board class describe the object representing the game board
 */
 
-var Board = function(size,elementID,otherBoard){
-  if (otherBoard) {
-    this.board = otherBoard.board;
-    for(var y=0;y<this.size;y++){
-      for(var x=0;x<this.size;x++){
-          if(this.board.pawn){
-            this.board.pawn = this.board.pawn.clone();
-          }
-      }
-    }
-    this.elementID = otherBoard.elementID;
-    this.size = otherBoard.size;
-    this.movesVector = otherBoard.movesVector;
-  } else {
-    this.board = [];
-    this.elementID = elementID;
-    this.size = size;
-    this.movesVector = {
-      'NORTH' : { x: 0, y: -1},
-      'EAST' : { x: 1, y: 0},
-      'SOUTH' : { x: 0, y: 1},
-      'WEST' : { x: -1, y: 0},
-      'NORTHEAST' : { x: 1, y: -1},
-      'NORTHWEST' : { x: -1, y: -1},
-      'SOUTHEAST' : { x: 1, y: 1},
-      'SOUTHWEST' : { x: -1, y: 1},
-      'TAKENORTH' : { x: 0, y: -2},
-      'TAKEEAST' : { x: 2, y: 0},
-      'TAKESOUTH' : { x: 0, y: 2},
-      'TAKEWEST' : { x: -2, y: 0},
-      'TAKENORTHEAST' : { x: 2, y: -2},
-      'TAKENORTHWEST' : { x: -2, y: -2},
-      'TAKESOUTHEAST' : { x: 2, y: 2},
-      'TAKESOUTHWEST' : { x: -2, y: 2}
-    };
+var Board = function(size,elementID){
+  this.board = [];
+  this.elementID = elementID;
+  this.size = size;
+  this.movesVector = options.movesVector;
 
-    this.init();
-  }
+  this.init();
 };
 
 Board.prototype.init = function(){
@@ -202,10 +171,19 @@ Board.prototype.getNearestNode = function(coordX,coordY){
   return nearestNode;
 };
 
-Board.prototype.movePawnFromNode = function(oldNode,newNode){
-  newNode.pawn = oldNode.pawn;
-  console.log(oldNode);
-  delete oldNode.pawn;
+Board.prototype.movePawnFromNode = function(move){
+  var origin = this.board[move.origin.y][move.origin.x];
+  var target = this.board[move.target.y][move.target.x];
+  
+  target.pawn = origin.pawn;
+  delete origin.pawn;
+  
+  if(move.target.isEatMove){
+    var eaten = this.board[move.target.toBeEatenNode.y][move.target.toBeEatenNode.x];
+    eaten.pawn.drawnPawn.remove();
+    
+    delete eaten.pawn;
+  }
 };
 
 Board.prototype.getNodeByCoordinates = function(coordX,coordY){
@@ -234,8 +212,4 @@ Board.prototype.getPathBetweenNodes = function(oldNode,newNode){
     }
   }
   return false;
-};
-
-Board.prototype.clone = function(){
-  return new Board(null,null,this);
 };

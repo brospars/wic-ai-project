@@ -19,11 +19,37 @@
   <svg id="board"></svg>
 
   <script src="lib/snap.svg-min.js"></script>
+  <script src="js/functions.js"></script>
   <script src="js/Game.js"></script>
   <script src="js/Board.js"></script>
   <script src="js/Pawn.js"></script>
   <script src="js/IA.js"></script>
   <script>
+    var options = {
+      ia : true,
+      mode : "RANDOM",
+      speed : 50,
+      movesVector : {
+        'NORTH' : { x: 0, y: -1},
+        'EAST' : { x: 1, y: 0},
+        'SOUTH' : { x: 0, y: 1},
+        'WEST' : { x: -1, y: 0},
+        'NORTHEAST' : { x: 1, y: -1},
+        'NORTHWEST' : { x: -1, y: -1},
+        'SOUTHEAST' : { x: 1, y: 1},
+        'SOUTHWEST' : { x: -1, y: 1},
+        'TAKENORTH' : { x: 0, y: -2},
+        'TAKEEAST' : { x: 2, y: 0},
+        'TAKESOUTH' : { x: 0, y: 2},
+        'TAKEWEST' : { x: -2, y: 0},
+        'TAKENORTHEAST' : { x: 2, y: -2},
+        'TAKENORTHWEST' : { x: -2, y: -2},
+        'TAKESOUTHEAST' : { x: 2, y: 2},
+        'TAKESOUTHWEST' : { x: -2, y: 2}
+      }
+    };
+    
+    
     if(!typeof Snap == 'function'){
       throw new Error("Error : Snap is not defined");
     }
