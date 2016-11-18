@@ -154,9 +154,9 @@ Game.prototype.startTurn = function(param){
   console.log("Game object startTurn",g);
 
   if(iaWhite != undefined && this.currentTurn == "WHITE"){
-    //iaWhite.doMove(g);
+    iaWhite.doMove(g);
   }else if(iaBlack != undefined && this.currentTurn == "BLACK"){
-    //iaBlack.doMove(g);
+    iaBlack.doMove(g);
   }
 };
 

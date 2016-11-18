@@ -9,7 +9,14 @@
 
 var Board = function(size,elementID,otherBoard){
   if (otherBoard) {
-    this.board = JSON.parse(JSON.stringify(otherBoard.board));
+    this.board = otherBoard.board;
+    for(var y=0;y<this.size;y++){
+      for(var x=0;x<this.size;x++){
+          if(this.board.pawn){
+            this.board.pawn = this.board.pawn.clone();
+          }
+      }
+    }
     this.elementID = otherBoard.elementID;
     this.size = otherBoard.size;
     this.movesVector = otherBoard.movesVector;
@@ -197,6 +204,7 @@ Board.prototype.getNearestNode = function(coordX,coordY){
 
 Board.prototype.movePawnFromNode = function(oldNode,newNode){
   newNode.pawn = oldNode.pawn;
+  console.log(oldNode);
   delete oldNode.pawn;
 };
 
