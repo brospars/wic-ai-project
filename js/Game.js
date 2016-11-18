@@ -149,15 +149,10 @@ Game.prototype.startTurn = function(param){
   if(param != "REBOUND"){
     this.currentTurnMoves = this.getAllPossibleMoves();
   }
-  console.log(this.currentTurnMoves);
-  var g = this;
-  console.log("Game object startTurn",g);
 
-  if(iaWhite != undefined && this.currentTurn == "WHITE"){
-    iaWhite.doMove(g);
-  }else if(iaBlack != undefined && this.currentTurn == "BLACK"){
-    iaBlack.doMove(g);
-  }
+  var move = IA.calculateNextMove(this.gameboard.board, this.currentTurn);
+
+  //this.doMove(move);
 };
 
 // Moving the object pawn in the board array
