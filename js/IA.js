@@ -19,13 +19,39 @@ IA.prototype.calculateNextMove = function (board,turn,moves) {
 
   if (this.mode == "RANDOM") {
     return this.getMoveRandom(turnPossibleMoves);
-  } else if (this.mode == "MINMAX") {
+  } else if (this.mode == "EATFIRST") {
+    return this.getMoveEatFirst(turnPossibleMoves);
+  }else if (this.mode == "MINMAX") {
     return this.getMoveMinMax();
+  //default return random  
+  }else{
+    return this.getMoveRandom(turnPossibleMoves);
   }
   
 };
 
 IA.prototype.getMoveRandom = function (turnPossibleMoves) {
+  var indexOrigin = getRandomInt(0,turnPossibleMoves.length);
+  var indexTarget = getRandomInt(0,turnPossibleMoves[indexOrigin].targets.length);
+  return {
+    origin:turnPossibleMoves[indexOrigin].origin,
+    target:turnPossibleMoves[indexOrigin].targets[indexTarget]
+  };
+};
+
+IA.prototype.getMoveEatFirst = function (turnPossibleMoves) {  
+  for(var indexOrigin in turnPossibleMoves){
+    for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
+      var currentTarget = turnPossibleMoves[indexOrigin].targets[indexTarget];
+      if(currentTarget.isEatMove){
+        return {
+          origin:turnPossibleMoves[indexOrigin].origin,
+          target:turnPossibleMoves[indexOrigin].targets[indexTarget]
+        };
+      }
+    }
+  }
+  
   var indexOrigin = getRandomInt(0,turnPossibleMoves.length);
   var indexTarget = getRandomInt(0,turnPossibleMoves[indexOrigin].targets.length);
   return {
