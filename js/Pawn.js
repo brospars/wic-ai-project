@@ -7,20 +7,21 @@
 *
 */
 
-var Pawn = function(color,coordX,coordY){
+var Pawn = function(color,coordX,coordY,size){
   this.color = color;
   this.coordX = coordX;
   this.coordY = coordY;
+  this.size = size;
   this.drawnPawn;
 
-  this.drawnPawn();
+  this.drawPawn();
 };
 
 Pawn.prototype.getCoordinates = function(){
  return [this.x, this.y];
 }
 
-Pawn.prototype.drawnPawn = function(){
-  this.drawnPawn = svg.circle(this.coordX, this.coordY, 40)
+Pawn.prototype.drawPawn = function(){
+  this.drawnPawn = svg.circle(this.coordX, this.coordY, this.size)
     .attr({strokeWidth:3, stroke:"black",fill:this.color,strokeLinecap:"round"});
 }

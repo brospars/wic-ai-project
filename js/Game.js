@@ -22,13 +22,15 @@ var Game = function(){
 Game.prototype.init = function(){
   this.gameboard = new Board(5,"board");
   var board = this.gameboard.board;
-
+  
+  var element = document.getElementById(this.gameboard.elementID);
+  var pawnSize = parseInt(element.getBoundingClientRect().width/15);
 
   for(var y=0;y<this.size;y++){
     for(var x=0;x<this.size;x++){
       if(y<board.length/2-1 || (y<board.length/2 && x<board.length/2-1)){
         //create white pawn at coordinate
-        var pawn = new Pawn("WHITE",board[y][x].coordX,board[y][x].coordY);
+        var pawn = new Pawn("WHITE",board[y][x].coordX,board[y][x].coordY,pawnSize);
         //add pawn to the board
         board[y][x].pawn = pawn;
         //add pawn to white pawns list
@@ -38,7 +40,7 @@ Game.prototype.init = function(){
       }
       if(y>board.length/2 || (y>board.length/2-1 && x>board.length/2)){
         //create black pawn at coordinate
-        var pawn = new Pawn("BLACK",board[y][x].coordX,board[y][x].coordY);
+        var pawn = new Pawn("BLACK",board[y][x].coordX,board[y][x].coordY,pawnSize);
         //add pawn to the board
         board[y][x].pawn = pawn;
         //add pawn to black pawns list

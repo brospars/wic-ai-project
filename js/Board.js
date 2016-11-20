@@ -124,19 +124,20 @@ Board.prototype.init = function(){
 Board.prototype.drawBoard = function(){
 
   var element = document.getElementById(this.elementID);
-  var width = element.getBoundingClientRect().width-160;
-  var height = element.getBoundingClientRect().height-160;
+  var offset = parseInt(element.getBoundingClientRect().width/10);
+  var width = element.getBoundingClientRect().width-offset*2;
+  var height = element.getBoundingClientRect().height-offset*2;
 
   for(var y=0;y<this.size;y++){
     for(var x=0;x<this.size;x++){
       var node = this.board[y][x];
-      var coordX = node.x*(width/(this.size-1))+80;
-      var coordY = node.y*(height/(this.size-1))+80;
+      var coordX = node.x*(width/(this.size-1))+offset;
+      var coordY = node.y*(height/(this.size-1))+offset;
 
       node.coordX = coordX;
       node.coordY = coordY;
 
-      svg.circle(coordX, coordY, 18).attr({fill:"grey"});
+      svg.circle(coordX, coordY, offset/4).attr({fill:"grey"});
 
       var moves = this.board[y][x].moves;
 
