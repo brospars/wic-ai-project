@@ -16,19 +16,54 @@
 </head>
 
 <body>
-  <svg id="board"></svg>
+  <div class="wrapper">
+    <div class="svg-wrapper">
+      <svg id="board"></svg>
+    </div>
+    <div class="controls">
+      <h3>Controls : </h3>
+      <li>
+        <button id="newGame">New Game</button>
+        <button id="startGame">Start Game</button>
+        <button id="pauseGame">Pause Game</button>
+      </li>
+    </div>
+    <div class="settings">
+      <h3>Settings : </h3>
+      <li>
+        <label>Speed :</label>
+        <input id="speed" type="number" value="50"/> ms
+      </li>
+      <li>
+        <label>IA White</label>
+        <input id="whiteIAEnabled" type="checkbox"/>
+        <select id="whiteIAMode"></select>
+      </li>
+      <li>
+        <label>IA Black</label>
+        <input id="blackIAEnabled" type="checkbox"/>
+        <select id="blackIAMode"></select>
+      </li>
+    </div>
+  </div>
 
   <script src="lib/snap.svg-min.js"></script>
+  <script src="lib/jquery.min.js"></script>
   <script src="js/functions.js"></script>
   <script src="js/Game.js"></script>
   <script src="js/Board.js"></script>
   <script src="js/Pawn.js"></script>
   <script src="js/IA.js"></script>
   <script>
+    var svg = Snap('#board');
+    var game = new Game();
+    
     var options = {
-      ia : true,
-      mode : "RANDOM",
-      speed : 1,
+      whiteIAEnabled : true,
+      blackIAEnabled : true,
+      whiteIAMode : "RANDOM",
+      blackIAMode : "RANDOM",
+      speed : 50,
       movesVector : {
         'NORTH' : { x: 0, y: -1},
         'EAST' : { x: 1, y: 0},
@@ -46,17 +81,57 @@
         'TAKENORTHWEST' : { x: -2, y: -2},
         'TAKESOUTHEAST' : { x: 2, y: 2},
         'TAKESOUTHWEST' : { x: -2, y: 2}
-      }
+      },
+      IAModes : ["RANDOM"]
     };
     
+    $(document).ready(function(){
+      
+      // Init inputs to default parameters
+      $("#whiteIAEnabled").prop('checked', options.whiteIAEnabled);
+      $("#blackIAEnabled").prop('checked', options.blackIAEnabled);
+      $("#speed").val(options.speed);
+      for(var i in options.IAModes){
+        var mode = options.IAModes[i];
+        $('#whiteIAMode').append($("<option />").val(mode).html(mode));
+        $('#blackIAMode').append($("<option />").val(mode).html(mode));
+      }
+      
+      //When settings change update options 
+      $('input, select').on('change',function(){
+          options.whiteIAEnabled = $("#whiteIAEnabled").prop('checked');
+          options.blackIAEnabled = $("#blackIAEnabled").prop('checked');
+          options.whiteIAMode = $("#whiteIAMode").val();
+          options.blackIAMode = $("#blackIAMode").val();
+          options.speed = parseInt($("#speed").val());
+        
+          console.log(options);
+      });
+      
+      //clear the game and init a new one
+      $('#newGame').click(function(){
+        svg.clear();
+        svg = Snap('#board');
+        game.destroy();
+        game = new Game();
+        game.init();
+      });
+      
+      //start game
+      $('#startGame').click(function(){
+        game.start();
+      });
+      
+      //pause game
+      $('#pauseGame').click(function(){
+        game.pause();
+      });
+      
+      //init the game
+      game.init();
+      
+    }); 
     
-    if(!typeof Snap == 'function'){
-      throw new Error("Error : Snap is not defined");
-    }
-  
-    var svg = Snap('#board');
-    var game = new Game();
-    game.init();
   </script>
 </body>
 </html>

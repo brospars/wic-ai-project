@@ -15,6 +15,8 @@ var Game = function(){
   this.countTurn = 1;
   this.currentTurn = "WHITE";
   this.currentTurnMoves = [];
+  this.gameIsRunning = false;
+  this.timeouts = [];
 };
 
 Game.prototype.init = function(){
@@ -49,41 +51,51 @@ Game.prototype.init = function(){
   this.startTurn();
 };
 
-Game.prototype.getMove = function(origin,target){
-  
-  // check if the moved pawn is the color of the current turn
-  if(origin.pawn.color != this.currentTurn){
-    console.log("Pawn is "+origin.pawn.color+" current turn is "+this.currentTurn);
-    return "ERROR";
-  }
+//Resume the game if not already running
+Game.prototype.start = function(){
+  if(!this.gameIsRunning){
+    this.gameIsRunning = true;
+    this.startTurn();
+  }  
+};
 
-  // check if the moved is contained in currentTurnMoves
-  for(var key in this.currentTurnMoves){
-    if(this.currentTurnMoves[key].origin.x == origin.x && this.currentTurnMoves[key].origin.y == origin.y){
-      var targets = this.currentTurnMoves[key].targets;
-      for(var index in targets){
-        if(targets[index].x == target.x && targets[index].y == target.y){
-          return {
-            origin:this.currentTurnMoves[key].origin,
-            target:this.currentTurnMoves[key].targets[index]
-          };
-        }
-      }
-    }
-  }
-  
-  console.log("This move is not allowed");
-  return "ERROR";
+//Pause the game
+Game.prototype.pause = function(){
+  this.gameIsRunning = false;
 };
 
 //if IA mode get next move else get possible moves
 Game.prototype.startTurn = function(){
-  if(options.ia){
-    var ia = new IA(options.mode);
-    var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
-    this.doMove(move);
+  if(this.gameIsRunning){
+    if(this.currentTurn == "WHITE" && options.whiteIAEnabled){
+      var ia = new IA(options.whiteIAMode);
+      var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
+      this.doMove(move);
+    }else if(this.currentTurn == "BLACK" && options.blackIAEnabled){
+      var ia = new IA(options.blackIAMode);
+      var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
+      this.doMove(move);
+    }else{
+      this.currentTurnMoves = getTurnPossibleMoves(cloneBoard(this.gameboard.board),this.currentTurn);
+    }
+  }
+};
+
+//if IA mode get next move (rebound)
+Game.prototype.startRebound = function(moves){
+  console.log("REBOUND");
+  var game = this;
+  
+  if(this.currentTurn == "WHITE" && options.whiteIAEnabled){
+    var ia = new IA(options.whiteIAMode);
+    var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves);
+    game.doMove(move);       
+  }else if(this.currentTurn == "BLACK" && options.blackIAEnabled){
+    var ia = new IA(options.blackIAMode);
+    var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves);
+    game.doMove(move);
   }else{
-    this.currentTurnMoves = getTurnPossibleMoves(cloneBoard(this.gameboard.board),this.currentTurn);
+    this.currentTurnMoves = moves;
   }
 };
 
@@ -118,15 +130,11 @@ Game.prototype.doMove = function(move){
     console.log("turn : "+this.countTurn,"w : "+this.whitePawns,"b : "+this.blackPawns);
     
     if(this.blackPawns < 1){
-      setTimeout(function(){
-        alert('White Wins');
-      },options.speed);
+      this.timeouts.push(setTimeout(function(){alert('White Wins');},options.speed));
       return;
     }
     if(this.whitePawns < 1){
-      setTimeout(function(){
-        alert('Blacks Wins');
-      },options.speed);
+      this.timeouts.push(setTimeout(function(){alert('Blacks Wins');},options.speed));
       return;
     }
     
@@ -137,29 +145,50 @@ Game.prototype.doMove = function(move){
     };        
     
     if(reboundMoves.targets.length > 0){
-      console.log("REBOUND");
-      
-      if(options.ia){
-        setTimeout(function(){
-          var ia = new IA(options.mode);
-          var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, [reboundMoves]);
-          game.doMove(move);
-        },options.speed*2);        
-      }else{
-        this.currentTurnMoves = getTurnPossibleMoves(cloneBoard(this.gameboard.board),this.currentTurn);
-      }
+      this.timeouts.push(setTimeout(function(){game.startRebound([reboundMoves]);},options.speed*2));
     }else{
-      setTimeout(function(){
-        game.endTurn();
-      },options.speed*2);
+      this.timeouts.push(setTimeout(function(){game.endTurn();},options.speed*2));
     }    
     
   }else{
-    setTimeout(function(){
-      game.endTurn();
-    },options.speed*2);
+    this.timeouts.push(setTimeout(function(){game.endTurn();},options.speed*2));
   }
   
+};
+
+
+Game.prototype.getMove = function(origin,target){
+  
+  // check if the moved pawn is the color of the current turn
+  if(origin.pawn.color != this.currentTurn){
+    console.log("Pawn is "+origin.pawn.color+" current turn is "+this.currentTurn);
+    return "ERROR";
+  }
+
+  // check if the moved is contained in currentTurnMoves
+  for(var key in this.currentTurnMoves){
+    if(this.currentTurnMoves[key].origin.x == origin.x && this.currentTurnMoves[key].origin.y == origin.y){
+      var targets = this.currentTurnMoves[key].targets;
+      for(var index in targets){
+        if(targets[index].x == target.x && targets[index].y == target.y){
+          return {
+            origin:this.currentTurnMoves[key].origin,
+            target:this.currentTurnMoves[key].targets[index]
+          };
+        }
+      }
+    }
+  }
+  
+  console.log("This move is not allowed");
+  return "ERROR";
+};
+
+// clear all event and timeouts, then destroy himself
+Game.prototype.destroy = function(){
+  for(var key in this.timeouts){
+    clearTimeout(this.timeouts[key]);
+  }
 };
 
 var move = function(dx,dy) {
