@@ -12,7 +12,8 @@ function getTurnPossibleMoves(board,turn) {
           turnPossibleMoves.push({
             origin : {
               x:currentNode.x,
-              y:currentNode.y
+              y:currentNode.y,
+              pawn:currentNode.pawn
             },
             targets : currentPawnMoves
           });
@@ -45,7 +46,7 @@ function getPawnPossibleMoves(board,node,isBounce) {
         var toBeEatenNode = board[node.y + directionEatVector.y][node.x + directionEatVector.x];
 
         if(toBeEatenNode.pawn && !targetNode.pawn && toBeEatenNode.pawn != node.pawn){
-          pawnPossibleMoves.push({x:targetNode.x,y:targetNode.y, isEatMove : true, toBeEatenNode : {x:toBeEatenNode.x,y:toBeEatenNode.y}});
+          pawnPossibleMoves.push({x:targetNode.x,y:targetNode.y, isEatMove : true, toBeEatenNode : {x:toBeEatenNode.x,y:toBeEatenNode.y,pawn:toBeEatenNode.pawn}});
         }
       }
     }

@@ -108,10 +108,11 @@ Game.prototype.doMove = function(move){
   this.gameboard.movePawnFromNode(move);
   
   if(move.target.isEatMove){
-    if(this.currentTurn == "WHITE"){
-      this.blackPawns = this.blackPawns-1;
+    console.log(move.origin.pawn+" eat "+move.target.toBeEatenNode.pawn);
+    if(move.target.toBeEatenNode.pawn == "WHITE"){
+      this.whitePawns = this.whitePawns-1;
     }else{
-      this.whitePawns= this.whitePawns-1;
+      this.blackPawns= this.blackPawns-1;
     }    
     
     console.log("turn : "+this.countTurn,"w : "+this.whitePawns,"b : "+this.blackPawns);
@@ -131,12 +132,13 @@ Game.prototype.doMove = function(move){
     
     var virtualBoard = cloneBoard(this.gameboard.board);
     var reboundMoves = {
-      origin:move.target,
-      targets:getPawnPossibleMoves(virtualBoard,target,true)
+      origin:virtualBoard[move.target.y][move.target.x],
+      targets:getPawnPossibleMoves(virtualBoard,virtualBoard[target.y][target.x],true)
     };        
     
     if(reboundMoves.targets.length > 0){
       console.log("REBOUND");
+      
       if(options.ia){
         setTimeout(function(){
           var ia = new IA(options.mode);
