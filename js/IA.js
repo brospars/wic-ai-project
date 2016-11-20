@@ -8,8 +8,13 @@
  *
  */
 
-var IA = function (mode) {
+var IA = function (mode,playerColor) {
   this.mode = mode;
+  this.playerColor = playerColor;
+  this.opponentColor = (this.playerColor == "WHITE") ? "BLACK":"WHITE";
+  this.countCalculatedState = 0;
+  this.calculatedStates = [];
+  this.bestState;
 };
 
 IA.prototype.calculateNextMove = function (board,turn,moves) {
@@ -21,10 +26,22 @@ IA.prototype.calculateNextMove = function (board,turn,moves) {
     return this.getMoveRandom(turnPossibleMoves);
   } else if (this.mode == "EATFIRST") {
     return this.getMoveEatFirst(turnPossibleMoves);
-  }else if (this.mode == "MINMAX") {
-    return this.getMoveMinMax();
-  //default return random  
-  }else{
+  }else if (this.mode == "MINIMAX") {
+    var starttime = new Date().getTime();
+    
+    var move = this.getMoveMiniMax(0,virtualBoard,turnPossibleMoves,turn);
+    /* Print search tree 
+    for(var i in this.calculatedStates){
+        for(var j in this.calculatedStates[i]){
+          console.log(printBoard(this.calculatedStates[j][j].board));
+        }
+    }*/
+    console.log("Total number of states explored : "+this.countCalculatedState);
+    console.log("Best final state : ",this.bestState);
+    var endtime = new Date().getTime();
+    console.log(endtime-starttime+"ms");
+    return move;
+  }else{ //default return random 
     return this.getMoveRandom(turnPossibleMoves);
   }
   
@@ -60,12 +77,66 @@ IA.prototype.getMoveEatFirst = function (turnPossibleMoves) {
   };
 };
 
-IA.prototype.getMoveMinMax = function () {
+IA.prototype.getMoveMiniMax = function (depth,board,turnPossibleMoves,turn) {
+  if(depth < 6){
+    for(var indexOrigin in turnPossibleMoves){
+      for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
+        var move = {
+            origin:turnPossibleMoves[indexOrigin].origin,
+            target:turnPossibleMoves[indexOrigin].targets[indexTarget]
+        };
 
+        var nextState = this.simulateTurn(board,move,turn);
+        var nextTurn = nextState.turn;
+        var nextBoard = nextState.board;
+        var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
+        
+        if(!this.bestState || 
+           /*nextState.count[this.playerColor]-nextState.count[this.opponentColor] > 
+           this.bestState.count[this.playerColor]-this.bestState.count[this.opponentColor]*/
+           nextState.count[this.opponentColor] < this.bestState.count[this.opponentColor]
+          ){
+          this.bestState = nextState;
+        }
+        
+        if(this.calculatedStates[depth] == undefined){
+          this.calculatedStates[depth] = [];
+        }
+        
+        this.calculatedStates[depth].push(nextState);
+        this.countCalculatedState++;
+        
+        this.getMoveMiniMax(depth+1,nextBoard,nextMoves,nextTurn);
+      }
+    }
+  }
 };
 
-IA.prototype.simulateTurn = function () {
-
+IA.prototype.simulateTurn = function (board, move, turn) {
+  var board = cloneBoard(board);
+  var origin = board[move.origin.y][move.origin.x];
+  var target = board[move.target.y][move.target.x];
+  
+  target.pawn = origin.pawn;
+  delete origin.pawn;
+  
+  if(move.target.isEatMove){
+    var eaten = board[move.target.toBeEatenNode.y][move.target.toBeEatenNode.x];    
+    delete eaten.pawn;
+  }
+  
+  turn = (turn == "WHITE") ? "BLACK":"WHITE";
+  
+  return {
+    board:board,
+    turn:turn,
+    count:countPawns(board)
+  };
 };
+
+
+
+
+
 
 

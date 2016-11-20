@@ -52,3 +52,22 @@ h3{
   margin:1%;
   min-width: 300px;
 }
+
+label{
+}
+
+input[type="text"]{
+  padding:5px;
+  width:40px;
+  text-align: center;
+}
+
+select{
+  padding:5px;
+  width:100px;
+}
+
+
+input[type="checkbox"]{
+  margin:0 5px;
+}

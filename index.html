@@ -7,6 +7,7 @@
   <title>Alquerque Game</title>
   <meta name="description" content="Alquerque Game">
   <meta name="author" content="Boris Gallet, Benoit Rospars">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="css/style.css?v=1.0">
 
@@ -32,17 +33,21 @@
       <h3>Settings : </h3>
       <li>
         <label>Speed :</label>
-        <input id="speed" type="number" value="50"/> ms
+        <input id="speed" type="text"/> ms
       </li>
       <li>
         <label>IA White</label>
         <input id="whiteIAEnabled" type="checkbox"/>
         <select id="whiteIAMode"></select>
+        <label>Depth : </label>
+        <input id="whiteIADepth" type="text"/>
       </li>
       <li>
         <label>IA Black</label>
         <input id="blackIAEnabled" type="checkbox"/>
         <select id="blackIAMode"></select>
+        <label>Depth : </label>
+        <input id="blackIADepth" type="text"/>
       </li>
     </div>
   </div>
@@ -61,8 +66,10 @@
     var options = {
       whiteIAEnabled : true,
       blackIAEnabled : true,
-      whiteIAMode : "EATFIRST",
-      blackIAMode : "EATFIRST",
+      whiteIAMode : "MINIMAX",
+      blackIAMode : "MINIMAX",
+      whiteIADepth : 4,
+      blackIADepth : 4,
       speed : 50,
       movesVector : {
         'NORTH' : { x: 0, y: -1},
@@ -82,7 +89,7 @@
         'TAKESOUTHEAST' : { x: 2, y: 2},
         'TAKESOUTHWEST' : { x: -2, y: 2}
       },
-      IAModes : ["EATFIRST","RANDOM"]
+      IAModes : ["RANDOM","EATFIRST","MINIMAX"]
     };
     
     $(document).ready(function(){
@@ -91,11 +98,15 @@
       $("#whiteIAEnabled").prop('checked', options.whiteIAEnabled);
       $("#blackIAEnabled").prop('checked', options.blackIAEnabled);
       $("#speed").val(options.speed);
+      $("#whiteIADepth").val(options.whiteIADepth);
+      $("#blackIADepth").val(options.blackIADepth);
       for(var i in options.IAModes){
         var mode = options.IAModes[i];
         $('#whiteIAMode').append($("<option />").val(mode).html(mode));
         $('#blackIAMode').append($("<option />").val(mode).html(mode));
       }
+      $("#whiteIAMode").val(options.whiteIAMode);
+      $("#blackIAMode").val(options.blackIAMode);
       
       //When settings change update options 
       $('input, select').on('change',function(){
@@ -103,6 +114,8 @@
           options.blackIAEnabled = $("#blackIAEnabled").prop('checked');
           options.whiteIAMode = $("#whiteIAMode").val();
           options.blackIAMode = $("#blackIAMode").val();
+          options.whiteIADepth = parseInt($("#whiteIADepth").val());
+          options.blackIADepth = parseInt($("#blackIADepth").val());
           options.speed = parseInt($("#speed").val());
         
           console.log(options);

@@ -68,11 +68,11 @@ Game.prototype.pause = function(){
 Game.prototype.startTurn = function(){
   if(this.gameIsRunning){
     if(this.currentTurn == "WHITE" && options.whiteIAEnabled){
-      var ia = new IA(options.whiteIAMode);
+      var ia = new IA(options.whiteIAMode, this.currentTurn);
       var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
       this.doMove(move);
     }else if(this.currentTurn == "BLACK" && options.blackIAEnabled){
-      var ia = new IA(options.blackIAMode);
+      var ia = new IA(options.blackIAMode, this.currentTurn);
       var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
       this.doMove(move);
     }else{
@@ -87,11 +87,11 @@ Game.prototype.startRebound = function(moves){
   var game = this;
   
   if(this.currentTurn == "WHITE" && options.whiteIAEnabled){
-    var ia = new IA(options.whiteIAMode);
+    var ia = new IA(options.whiteIAMode, this.currentTurn);
     var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves);
     game.doMove(move);       
   }else if(this.currentTurn == "BLACK" && options.blackIAEnabled){
-    var ia = new IA(options.blackIAMode);
+    var ia = new IA(options.blackIAMode, this.currentTurn);
     var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves);
     game.doMove(move);
   }else{

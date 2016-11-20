@@ -1,52 +1,66 @@
-function getTurnPossibleMoves(board,turn) {
+function getTurnPossibleMoves(board, turn) {
   var turnPossibleMoves = [];
-  
+
   //for each node for the current team we look for all the possible moves
-  for(var y=0;y<board.length;y++){
-    for(var x=0;x<board[y].length;x++){
+  for (var y = 0; y < board.length; y++) {
+    for (var x = 0; x < board[y].length; x++) {
       var currentNode = board[y][x];
       //if currentNode has pawn and is the right color then get pawn possible moves
-      if(currentNode.pawn && currentNode.pawn == turn){
-        var currentPawnMoves = getPawnPossibleMoves(board,currentNode, false);
-        if(currentPawnMoves.length>0){
+      if (currentNode.pawn && currentNode.pawn == turn) {
+        var currentPawnMoves = getPawnPossibleMoves(board, currentNode, false);
+        if (currentPawnMoves.length > 0) {
           turnPossibleMoves.push({
-            origin : {
-              x:currentNode.x,
-              y:currentNode.y,
-              pawn:currentNode.pawn
+            origin: {
+              x: currentNode.x,
+              y: currentNode.y,
+              pawn: currentNode.pawn
             },
-            targets : currentPawnMoves
+            targets: currentPawnMoves
           });
         }
       }
     }
   }
-  
+
   return turnPossibleMoves;
 }
 
-function getPawnPossibleMoves(board,node,isBounce) {
+function getPawnPossibleMoves(board, node, isBounce) {
   var pawnPossibleMoves = [];
-  
-  for(var direction in node.moves){
-    if(node.moves[direction]){
+
+  for (var direction in node.moves) {
+    if (node.moves[direction]) {
       var directionVector = options.movesVector[direction];
       var targetNode = board[node.y + directionVector.y][node.x + directionVector.x];
-      
+
       //non eating move
-      if(direction.indexOf("TAKE")==-1 && !isBounce){
-        if(!targetNode.pawn){
-          pawnPossibleMoves.push({x:targetNode.x,y:targetNode.y, isEatMove : false, toBeEatenNode : null});
+      if (direction.indexOf("TAKE") == -1 && !isBounce) {
+        if (!targetNode.pawn) {
+          pawnPossibleMoves.push({
+            x: targetNode.x,
+            y: targetNode.y,
+            isEatMove: false,
+            toBeEatenNode: null
+          });
         }
-      // eating move  
+        // eating move  
       } else {
         // check if the pawn between is a different color pawn
         var testNodeDirection = direction.replace("TAKE", "");
         var directionEatVector = options.movesVector[testNodeDirection];
         var toBeEatenNode = board[node.y + directionEatVector.y][node.x + directionEatVector.x];
 
-        if(toBeEatenNode.pawn && !targetNode.pawn && toBeEatenNode.pawn != node.pawn){
-          pawnPossibleMoves.push({x:targetNode.x,y:targetNode.y, isEatMove : true, toBeEatenNode : {x:toBeEatenNode.x,y:toBeEatenNode.y,pawn:toBeEatenNode.pawn}});
+        if (toBeEatenNode.pawn && !targetNode.pawn && toBeEatenNode.pawn != node.pawn) {
+          pawnPossibleMoves.push({
+            x: targetNode.x,
+            y: targetNode.y,
+            isEatMove: true,
+            toBeEatenNode: {
+              x: toBeEatenNode.x,
+              y: toBeEatenNode.y,
+              pawn: toBeEatenNode.pawn
+            }
+          });
         }
       }
     }
@@ -54,28 +68,66 @@ function getPawnPossibleMoves(board,node,isBounce) {
   return pawnPossibleMoves;
 }
 
-function cloneBoard (board) {
+function cloneBoard(board) {
   var clonedBoard = [];
 
   for (var y = 0; y < board.length; y++) {
     clonedBoard.push([]);
     for (var x = 0; x < board[y].length; x++) {
       var node = {
-        x:board[y][x].x,
-        y:board[y][x].y,
-        moves:board[y][x].moves
+        x: board[y][x].x,
+        y: board[y][x].y,
+        moves: board[y][x].moves
       };
-      
-      if(board[y][x].pawn != undefined){
-        node.pawn = board[y][x].pawn.color;
+
+      if (board[y][x].pawn != undefined) {
+        //si on clone deja un board cloné
+        if (board[y][x].pawn == "WHITE" || board[y][x].pawn == "BLACK") {
+          node.pawn = board[y][x].pawn;
+        } else {
+          node.pawn = board[y][x].pawn.color;
+        }
       }
-      
-      
+
+
       clonedBoard[y].push(node);
     }
   }
-  
+
   return clonedBoard;
+}
+
+function printBoard(board) {
+  var print = '';
+  for (var y = 0; y < board.length; y++) {
+    print = print + '\n'
+    for (var x = 0; x < board[y].length; x++) {
+      if (board[y][x].pawn == "WHITE") {
+        print = print + " ☺ "
+      }else if (board[y][x].pawn == "BLACK") {
+        print = print + " ☻ "
+      }else{
+        print = print + "   "
+      }
+    }
+  }
+
+  return print;
+}
+
+function countPawns(board) {
+  var count = {"BLACK":0,"WHITE":0};
+  for (var y = 0; y < board.length; y++) {
+    for (var x = 0; x < board[y].length; x++) {
+      if (board[y][x].pawn == "WHITE") {
+        count["WHITE"]++;
+      }else if (board[y][x].pawn == "BLACK") {
+       count["BLACK"]++;
+      }
+    }
+  }
+
+  return count;
 }
 
 function getRandomInt(min, max) {
