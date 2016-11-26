@@ -30,15 +30,7 @@ IA.prototype.calculateNextMove = function (board,turn,moves) {
   }else{ //default return random 
     return this.getMoveRandom(turnPossibleMoves);
   }
-  
-  /* Print search tree 
-  console.log("Total number of states explored : "+this.countCalculatedState);
-  console.log("Best final state : ",this.bestState);
-  for(var i in this.calculatedStates){
-      for(var j in this.calculatedStates[i]){
-        console.log(printBoard(this.calculatedStates[j][j].board));
-      }
-  }*/
+
   var endtime = new Date().getTime();
   console.log(endtime-starttime+"ms");  
 };
@@ -76,10 +68,12 @@ IA.prototype.getMoveEatFirst = function (turnPossibleMoves) {
 IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
   var ia = this;
   var maxDepth = (this.playerColor == "WHITE") ? options.whiteIADepth : options.blackIADepth;
-  var chosenMove;
+  var chosenMoves = [];
   
   console.log(max(0,board,turnPossibleMoves,turn));
   
+  var chosenMove = chosenMoves[getRandomInt(0,chosenMoves.length)];
+
   return chosenMove;
   
   function max(depth,board,turnPossibleMoves,turn){
@@ -102,12 +96,11 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
 
           var val = min(depth+1,nextBoard,nextMoves,nextTurn);
           
-          if(val > max){
+          if(val >= max){
             max = val;
-            
-            //Set best move if it's next move (aka depth = 0)
+            //Push to choseMoves if it's next move (aka depth = 0)
             if(depth == 0){
-              chosenMove = move;
+              chosenMoves.push(move);
             }
           }
         }
@@ -152,11 +145,11 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
   }
   
   function eval(board){
-    var count = countPawns(board);
+    var scores = countScores(board);
     if(ia.playerColor == "WHITE"){
-      return count["WHITE"]-count["BLACK"];
+      return scores["WHITE"]-scores["BLACK"];
     }else{
-      return count["BLACK"]-count["WHITE"];
+      return scores["BLACK"]-scores["WHITE"];
     }
   }
 };

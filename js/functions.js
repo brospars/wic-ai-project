@@ -130,6 +130,32 @@ function countPawns(board) {
   return count;
 }
 
+//Count pawns and calc scores from coordinates (corner : 3, ledge : 2, other: 1)
+function countScores(board) {
+  var scores = {"BLACK":0,"WHITE":0};
+  var maxSize = board.length;
+  for (var y = 0; y < board.length; y++) {
+    for (var x = 0; x < board[y].length; x++) {
+      var score = 1;
+      if(y == 0 || x == 0 || y == maxSize || x == maxSize){
+        score = 2;
+      }
+
+      if(x == 0 && y == 0 || x == maxSize && y == maxSize || x == 0 && y == maxSize || x == maxSize && y == 0){
+        score = 3;
+      }
+
+      if (board[y][x].pawn == "WHITE") {
+        scores["WHITE"] = scores["WHITE"]+score;
+      }else if (board[y][x].pawn == "BLACK") {
+       scores["BLACK"] = scores["BLACK"]+score;
+      }
+    }
+  }
+
+  return scores;
+}
+
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);

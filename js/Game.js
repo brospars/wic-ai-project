@@ -17,6 +17,7 @@ var Game = function(){
   this.currentTurnMoves = [];
   this.gameIsRunning = false;
   this.timeouts = [];
+  this.history = [];
 };
 
 Game.prototype.init = function(){
@@ -105,6 +106,17 @@ Game.prototype.startRebound = function(moves){
 Game.prototype.endTurn = function(){
   this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
   this.countTurn++;
+  this.history.push(cloneBoard(this.gameboard.board));
+    
+  if(this.blackPawns < 1){
+    this.endGame("White");
+    return;
+  }
+  if(this.whitePawns < 1){
+    this.endGame("Black");
+    return;
+  }
+  
   this.startTurn();
 };
 
@@ -131,20 +143,11 @@ Game.prototype.doMove = function(move){
     
     console.log("turn : "+this.countTurn,"w : "+this.whitePawns,"b : "+this.blackPawns);
     
-    if(this.blackPawns < 1){
-      this.timeouts.push(setTimeout(function(){alert('White Wins');},options.speed));
-      return;
-    }
-    if(this.whitePawns < 1){
-      this.timeouts.push(setTimeout(function(){alert('Blacks Wins');},options.speed));
-      return;
-    }
-    
     var virtualBoard = cloneBoard(this.gameboard.board);
     var reboundMoves = {
       origin:virtualBoard[move.target.y][move.target.x],
       targets:getPawnPossibleMoves(virtualBoard,virtualBoard[target.y][target.x],true)
-    };        
+    };    
     
     if(reboundMoves.targets.length > 0){
       this.timeouts.push(setTimeout(function(){game.startRebound([reboundMoves]);},options.speed*2));
@@ -184,6 +187,15 @@ Game.prototype.getMove = function(origin,target){
   
   console.log("This move is not allowed");
   return "ERROR";
+};
+
+// popup to annouce who win
+Game.prototype.endGame = function(color){
+  console.log(this.history);
+  for(var i in this.history){
+    console.log(printBoard(this.history[i]));
+  }
+  alert(color+' wins !');
 };
 
 // clear all event and timeouts, then destroy himself
