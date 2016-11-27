@@ -57,6 +57,15 @@ h3{
 }
 
 
+.history-item{
+  display: inline-block;
+  width:45%;
+  min-width: 300px;
+  margin: 2%;
+  text-align: center;
+}
+
+
 .history-svg{
   position:relative;
   display:inline-block;

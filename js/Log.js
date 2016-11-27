@@ -23,8 +23,8 @@ Log.prototype.printHistory = function(){
 }
 
 Log.prototype.drawStaticBoard = function(board,id){
-	var svgWrap = $('<svg class="history-svg" id="history'+id+'"></svg>');
-  $('#history').prepend(svgWrap);
+  var historyItem = $('<div class="history-item"><svg class="history-svg" id="history'+id+'"></svg></div>');
+  $('#history').prepend(historyItem);
 
   var historySvg = Snap('#history'+id);
 
@@ -33,13 +33,17 @@ Log.prototype.drawStaticBoard = function(board,id){
   var height = 300-offset*2;
   var size = board.length-1;
 
-	for (var y = 0; y < board.length; y++) {
-    	for (var x = 0; x < board[y].length; x++) {
+  for (var y = 0; y < board.length; y++) {
+      for (var x = 0; x < board[y].length; x++) {
         if(board[y][x].pawn){
           var coordX = x*(width/size)+offset;
           var coordY = y*(height/size)+offset;
           historySvg.circle(coordX, coordY, width/(size*2.2)).attr({strokeWidth:3, stroke:"black",fill:board[y][x].pawn,strokeLinecap:"round"});
         }        
-    	}
-    }
+      }
+  }
+  
+  var historyInfos = $('<div class="history-info"></div>');
+  historyInfos.html('tour n°'+id);
+  historyItem.append(historyInfos);
 }
