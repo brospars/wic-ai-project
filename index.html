@@ -65,7 +65,7 @@
         </div>
     </div>
     <div role="tabpanel" class="tab-pane" id="history">
-      
+
     </div>
     <div role="tabpanel" class="tab-pane" id="charts">
       <canvas id="pawnsChart" width="400" height="200"></canvas>
@@ -87,12 +87,12 @@
   <script>
     var svg = Snap('#board');
     var game = new Game();
-    
+
     var options = {
       whiteIAEnabled : true,
       blackIAEnabled : true,
       whiteIAMode : "RANDOM",
-      blackIAMode : "EATFIRST",
+      blackIAMode : "ALPHA-BETA PRUNING",
       whiteIADepth : 4,
       blackIADepth : 4,
       speed : 50,
@@ -114,11 +114,11 @@
         'TAKESOUTHEAST' : { x: 2, y: 2},
         'TAKESOUTHWEST' : { x: -2, y: 2}
       },
-      IAModes : ["RANDOM","EATFIRST","MINIMAX"]
+      IAModes : ["RANDOM","EATFIRST","MINIMAX", "ALPHA-BETA PRUNING"]
     };
-    
+
     $(document).ready(function(){
-      
+
       // Init inputs to default parameters
       $("#whiteIAEnabled").prop('checked', options.whiteIAEnabled);
       $("#blackIAEnabled").prop('checked', options.blackIAEnabled);
@@ -132,8 +132,8 @@
       }
       $("#whiteIAMode").val(options.whiteIAMode);
       $("#blackIAMode").val(options.blackIAMode);
-      
-      //When settings change update options 
+
+      //When settings change update options
       $('input, select').on('change',function(){
           options.whiteIAEnabled = $("#whiteIAEnabled").prop('checked');
           options.blackIAEnabled = $("#blackIAEnabled").prop('checked');
@@ -142,10 +142,10 @@
           options.whiteIADepth = parseInt($("#whiteIADepth").val());
           options.blackIADepth = parseInt($("#blackIADepth").val());
           options.speed = parseInt($("#speed").val());
-        
+
           console.log(options);
       });
-      
+
       //clear the game and init a new one
       $('#newGame').click(function(){
         svg.clear();
@@ -154,21 +154,21 @@
         game = new Game();
         game.init();
       });
-      
+
       //start game
       $('#startGame').click(function(){
         game.start();
       });
-      
+
       //pause game
       $('#pauseGame').click(function(){
         game.pause();
       });
-      
+
       //init the game
       game.init();
-      
-    }); 
+
+    });
   </script>
 </body>
 </html>
