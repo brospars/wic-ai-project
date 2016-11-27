@@ -163,24 +163,23 @@ IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
   var alpha = -999;
   var beta = 999;
   var countCalculs = 0;
-  var countPrunning = 0;
+  var countPruning = 0;
 
   // We run the reccursive algorythm for the current board
   alphabeta(0,board,turnPossibleMoves,turn, alpha, beta);
   var chosenMove = chosenMoves[getRandomInt(0,chosenMoves.length)];
 
   console.log("Number of calculs in Alpha-Beta Prunning "+ countCalculs);
-  console.log("Number of Pruning : ")
+  console.log("Number of Pruning : " + countPruning);
   return chosenMove;
 
   function alphabeta(depth, board, turnPossibleMoves, turn, alpha, beta){
-    if(depth == maxDepth){
-      console.log("Alpha-Beta maxDepth Eval : " + eval(board));
+    if(depth == maxDepth-1){
       return eval(board) //If we are on a leaf, we return the value
     } else {
       if (depth%2 != 0) { //if we are on Minimize node for all children we do
         var val = 999;
-        console.log("Minimize node level : " + depth );
+        //console.log("Minimize node level : " + depth );
         for(var indexOrigin in turnPossibleMoves){
           for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
             var move = {
@@ -193,15 +192,20 @@ IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
             var nextBoard = nextState.board;
             var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
 
+            countCalculs++;
+            //console.log("Val before min : " + val);
+            //console.log("ab before Min (depth " + depth + ", alpha : " + alpha + "beta : " + beta + "): " + alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
             val = Math.min(val, alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
+            //console.log("Val after min: " + val + " alpha : " + alpha );
             if(alpha >= val){ //If alpha lower than val min we're alphaPrunning and return val
-              countPrunning++;
+              countPruning++;
               return val;
             }
             beta = Math.min(beta,val); //We update beta value because we're on minimize node
           }
         }
       } else { // If we're not on minimize node we are on maximize node
+        //console.log("Maximize node level :" + depth );
         var val = -999;
         for(var indexOrigin in turnPossibleMoves){
           for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
@@ -215,88 +219,28 @@ IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
             var nextBoard = nextState.board;
             var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
 
-            console.log("val lvl 1 :" + val);
-
+            countCalculs++;
+            //console.log("Max val :" + val);
+            //console.log("ab before Max : " + alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
             val = Math.max(val, alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
+            //console.log("val after Max : " + val + " beta " + beta);
             if(val >= beta){ //if value in max greater or egal than beta so we're betaPrunning and return val
-              countPrunning++;
+              countPruning++;
               return val;
             }
-            console.log("val " + val + " | alpha : " + alpha);
-            if(depth == 0 && alpha >= val){
-              console.log("we add a move ");
-              chosenMoves.push(move);
-            }
-            val = Math.max(alpha,val); //We update the value of the minimize node
-          }
-        }
-      }
-    }
-  };
-  /**
-  function max(depth,board,turnPossibleMoves,turn){
-    if(depth < maxDepth){
-      var max = -999;
-
-      for(var indexOrigin in turnPossibleMoves){
-        for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
-          var move = {
-              origin:turnPossibleMoves[indexOrigin].origin,
-              target:turnPossibleMoves[indexOrigin].targets[indexTarget]
-          };
-
-          var nextState = ia.simulateTurn(board,move,turn);
-          var nextTurn = nextState.turn;
-          var nextBoard = nextState.board;
-          var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
-
-          var val = min(depth+1,nextBoard,nextMoves,nextTurn);
-          countCalculs++;
-          if(val >= max){
-            max = val;
-            //Push to choseMoves if it's next move (aka depth = 0)
+            //console.log("val " + val + " | alpha : " + alpha);
             if(depth == 0){
+              //console.log("we have a move ");
               chosenMoves.push(move);
             }
+            alpha = Math.max(alpha,val); //We update the value of the minimize node
           }
         }
       }
 
-      return max;
-    }else{
-      return eval(board);
+      return val;
     }
   }
-
-  function min(depth,board,turnPossibleMoves,turn){
-    if(depth < maxDepth){
-      var min = 999;
-
-      for(var indexOrigin in turnPossibleMoves){
-        for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
-          var move = {
-              origin:turnPossibleMoves[indexOrigin].origin,
-              target:turnPossibleMoves[indexOrigin].targets[indexTarget]
-          };
-
-          var nextState = ia.simulateTurn(board,move,turn);
-          var nextTurn = nextState.turn;
-          var nextBoard = nextState.board;
-          var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
-
-          var val = max(depth+1,nextBoard,nextMoves,nextTurn);
-          countCalculs++;
-          if(val < min){
-            min = val;
-          }
-        }
-      }
-
-      return min;
-    }else{
-      return eval(board);
-    }
-  } **/
 
   function eval(board){
     var scores = countScores(board);
