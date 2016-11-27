@@ -17,6 +17,8 @@ var Game = function(){
   this.currentTurnMoves = [];
   this.gameIsRunning = false;
   this.timeouts = [];
+  this.whiteExecutionTime = 0;
+  this.blackExecutionTime = 0;
   this.log = new Log();
 };
 
@@ -71,12 +73,20 @@ Game.prototype.pause = function(){
 Game.prototype.startTurn = function(){
   if(this.gameIsRunning){
     if(this.currentTurn == "WHITE" && options.whiteIAEnabled){
+      var startTime = new Date().getTime();
+      
       var ia = new IA(options.whiteIAMode, this.currentTurn);
       var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
+      
+      this.whiteExecutionTime = new Date().getTime() - startTime;
       this.doMove(move);
     }else if(this.currentTurn == "BLACK" && options.blackIAEnabled){
+      var startTime = new Date().getTime();
+      
       var ia = new IA(options.blackIAMode, this.currentTurn);
       var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
+      
+      this.blackExecutionTime = new Date().getTime() - startTime;
       this.doMove(move);
     }else{
       this.currentTurnMoves = getTurnPossibleMoves(cloneBoard(this.gameboard.board),this.currentTurn);
@@ -111,7 +121,9 @@ Game.prototype.endTurn = function(){
   this.log.addState({
     board:cloneBoard(this.gameboard.board),
     blackPawns : this.blackPawns,
-    whitePawns : this.whitePawns
+    whitePawns : this.whitePawns,
+    whiteExecutionTime : this.whiteExecutionTime,
+    blackExecutionTime : this.blackExecutionTime
   });
     
   if(this.blackPawns < 1){
@@ -195,7 +207,6 @@ Game.prototype.getMove = function(origin,target){
 
 // popup to annouce who win
 Game.prototype.endGame = function(color){
-  this.log.printHistory();
   alert(color+' wins !');
 };
 
@@ -204,6 +215,7 @@ Game.prototype.destroy = function(){
   for(var key in this.timeouts){
     clearTimeout(this.timeouts[key]);
   }
+  this.log.clear();
 };
 
 var move = function(dx,dy) {
