@@ -17,7 +17,7 @@ var Game = function(){
   this.currentTurnMoves = [];
   this.gameIsRunning = false;
   this.timeouts = [];
-  this.history = [];
+  this.log = new Log();
 };
 
 Game.prototype.init = function(){
@@ -106,7 +106,13 @@ Game.prototype.startRebound = function(moves){
 Game.prototype.endTurn = function(){
   this.currentTurn = this.currentTurn == "WHITE" ? "BLACK":"WHITE";
   this.countTurn++;
-  this.history.push(cloneBoard(this.gameboard.board));
+
+
+  this.log.addState({
+    board:cloneBoard(this.gameboard.board),
+    blackPawns : this.blackPawns,
+    whitePawns : this.whitePawns
+  });
     
   if(this.blackPawns < 1){
     this.endGame("White");
@@ -116,7 +122,7 @@ Game.prototype.endTurn = function(){
     this.endGame("Black");
     return;
   }
-  
+
   this.startTurn();
 };
 
@@ -140,8 +146,6 @@ Game.prototype.doMove = function(move){
     }else{
       this.blackPawns= this.blackPawns-1;
     }    
-    
-    console.log("turn : "+this.countTurn,"w : "+this.whitePawns,"b : "+this.blackPawns);
     
     var virtualBoard = cloneBoard(this.gameboard.board);
     var reboundMoves = {
@@ -191,10 +195,7 @@ Game.prototype.getMove = function(origin,target){
 
 // popup to annouce who win
 Game.prototype.endGame = function(color){
-  console.log(this.history);
-  for(var i in this.history){
-    console.log(printBoard(this.history[i]));
-  }
+  this.log.printHistory();
   alert(color+' wins !');
 };
 

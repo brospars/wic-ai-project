@@ -9,6 +9,9 @@
   <meta name="author" content="Boris Gallet, Benoit Rospars">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Optional theme -->
+  <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="css/style.css?v=1.0">
 
   <!--[if lt IE 9]>
@@ -18,43 +21,64 @@
 
 <body>
   <div class="wrapper">
-    <div class="svg-wrapper">
-      <svg id="board"></svg>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#game" aria-controls="game" role="tab" data-toggle="tab">Game</a></li>
+      <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">History</a></li>
+      <li role="presentation"><a href="#charts" aria-controls="charts" role="tab" data-toggle="tab">Charts</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="game">
+        <div class="svg-wrapper">
+          <svg id="board"></svg>
+        </div>
+        <div class="controls">
+          <h3>Controls : </h3>
+          <li>
+            <button id="newGame" class="btn btn-default">New Game</button>
+            <button id="startGame" class="btn btn-default">Start Game</button>
+            <button id="pauseGame" class="btn btn-default">Pause Game</button>
+          </li>
+        </div>
+        <div class="settings">
+          <h3>Settings : </h3>
+          <li>
+            <label>Speed :</label>
+            <input id="speed" type="text"/> ms
+          </li>
+          <li>
+            <label>IA White</label>
+            <input id="whiteIAEnabled" type="checkbox"/>
+            <select id="whiteIAMode"></select>
+            <label>Depth : </label>
+            <input id="whiteIADepth" type="text"/>
+          </li>
+          <li>
+            <label>IA Black</label>
+            <input id="blackIAEnabled" type="checkbox"/>
+            <select id="blackIAMode"></select>
+            <label>Depth : </label>
+            <input id="blackIADepth" type="text"/>
+          </li>
+        </div>
     </div>
-    <div class="controls">
-      <h3>Controls : </h3>
-      <li>
-        <button id="newGame">New Game</button>
-        <button id="startGame">Start Game</button>
-        <button id="pauseGame">Pause Game</button>
-      </li>
+    <div role="tabpanel" class="tab-pane" id="history">
+      
     </div>
-    <div class="settings">
-      <h3>Settings : </h3>
-      <li>
-        <label>Speed :</label>
-        <input id="speed" type="text"/> ms
-      </li>
-      <li>
-        <label>IA White</label>
-        <input id="whiteIAEnabled" type="checkbox"/>
-        <select id="whiteIAMode"></select>
-        <label>Depth : </label>
-        <input id="whiteIADepth" type="text"/>
-      </li>
-      <li>
-        <label>IA Black</label>
-        <input id="blackIAEnabled" type="checkbox"/>
-        <select id="blackIAMode"></select>
-        <label>Depth : </label>
-        <input id="blackIADepth" type="text"/>
-      </li>
+    <div role="tabpanel" class="tab-pane" id="charts">
+      <canvas id="myChart" width="400" height="400"></canvas>
     </div>
   </div>
+  </div>
 
-  <script src="lib/snap.svg-min.js"></script>
   <script src="lib/jquery.min.js"></script>
+  <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+  <script src="lib/snap.svg-min.js"></script>
+  <script src="lib/Chart.bundle.min.js"></script>
   <script src="js/functions.js"></script>
+  <script src="js/Log.js"></script>
   <script src="js/Game.js"></script>
   <script src="js/Board.js"></script>
   <script src="js/Pawn.js"></script>
@@ -66,8 +90,8 @@
     var options = {
       whiteIAEnabled : true,
       blackIAEnabled : true,
-      whiteIAMode : "MINIMAX",
-      blackIAMode : "MINIMAX",
+      whiteIAMode : "RANDOM",
+      blackIAMode : "EATFIRST",
       whiteIADepth : 4,
       blackIADepth : 4,
       speed : 50,
@@ -144,7 +168,45 @@
       game.init();
       
     }); 
-    
+  </script>
+  <script>
+    var ctx = document.getElementById("myChart");
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255,99,132,1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    }
+                }]
+            }
+        }
+    });
   </script>
 </body>
 </html>

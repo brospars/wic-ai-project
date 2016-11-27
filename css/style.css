@@ -46,12 +46,32 @@ h3{
   padding-bottom: 100%;
 }
 
+#board{
+  position:absolute;
+  display:block;
+  top:0;left:0;
+  width:100%;
+  height: 100%;
+  margin: 0 auto;
+  background: #f1f1f1;
+}
+
+
+.history-svg{
+  position:relative;
+  display:inline-block;
+  width:300px;
+  height:300px;
+  background: #f1f1f1;
+  margin:10px;
+}
+
 .controls, .settings{
   display: inline-block;
   vertical-align: top;
   width:47%;
   margin:1%;
-  min-width: 300px;
+  min-width: 320px;
 }
 
 label{

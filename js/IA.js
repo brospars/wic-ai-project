@@ -12,7 +12,6 @@ var IA = function (mode,playerColor) {
   this.mode = mode;
   this.playerColor = playerColor;
   this.opponentColor = (this.playerColor == "WHITE") ? "BLACK":"WHITE";
-  this.countCalculatedState = 0;
 };
 
 IA.prototype.calculateNextMove = function (board,turn,moves) {
@@ -70,8 +69,7 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
   var maxDepth = (this.playerColor == "WHITE") ? options.whiteIADepth : options.blackIADepth;
   var chosenMoves = [];
   
-  console.log(max(0,board,turnPossibleMoves,turn));
-  
+  max(0,board,turnPossibleMoves,turn);
   var chosenMove = chosenMoves[getRandomInt(0,chosenMoves.length)];
 
   return chosenMove;
@@ -91,8 +89,6 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
           var nextTurn = nextState.turn;
           var nextBoard = nextState.board;
           var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
-          
-          ia.countCalculatedState++;
 
           var val = min(depth+1,nextBoard,nextMoves,nextTurn);
           
@@ -127,8 +123,6 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
           var nextTurn = nextState.turn;
           var nextBoard = nextState.board;
           var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
-          
-          ia.countCalculatedState++;
 
           var val = max(depth+1,nextBoard,nextMoves,nextTurn);
           
@@ -171,8 +165,7 @@ IA.prototype.simulateTurn = function (board, move, turn) {
   
   return {
     board:board,
-    turn:turn,
-    count:countPawns(board)
+    turn:turn
   };
 };
 
