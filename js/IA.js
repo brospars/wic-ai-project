@@ -12,6 +12,7 @@ var IA = function (mode,playerColor) {
   this.mode = mode;
   this.playerColor = playerColor;
   this.opponentColor = (this.playerColor == "WHITE") ? "BLACK":"WHITE";
+  this.countedStates = 0;
 };
 
 IA.prototype.calculateNextMove = function (board,turn,moves,isRebound) {
@@ -43,6 +44,8 @@ IA.prototype.calculateNextMove = function (board,turn,moves,isRebound) {
 };
 
 IA.prototype.getMoveRandom = function (turnPossibleMoves) {
+  this.countedStates++;
+  
   var indexOrigin = getRandomInt(0,turnPossibleMoves.length);
   var indexTarget = getRandomInt(0,turnPossibleMoves[indexOrigin].targets.length);
   return {
@@ -52,6 +55,8 @@ IA.prototype.getMoveRandom = function (turnPossibleMoves) {
 };
 
 IA.prototype.getMoveEatFirst = function (turnPossibleMoves) {
+  this.countedStates++;
+  
   for(var indexOrigin in turnPossibleMoves){
     for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
       var currentTarget = turnPossibleMoves[indexOrigin].targets[indexTarget];
@@ -273,6 +278,8 @@ IA.prototype.simulateTurn = function (board, move, turn) {
   }
   
   turn = (turn == "WHITE") ? "BLACK":"WHITE";
+  
+  this.countedStates++;
 
   return {
     board:board,

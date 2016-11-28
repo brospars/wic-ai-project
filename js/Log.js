@@ -9,6 +9,18 @@
 
 var Log = function () {
   this.history = [];
+  this.pawnsChartCanvas;
+  this.pawnsChart;
+  this.perfChartCanvas;
+  this.perfChart;
+  this.perf2ChartCanvas;
+  this.perf2Chart;
+  
+  this.initCharts();
+  
+};
+
+Log.prototype.initCharts = function(){
   this.pawnsChartCanvas = document.getElementById("pawnsChart");
   this.pawnsChart = new Chart(this.pawnsChartCanvas, {
     type: 'line',
@@ -114,6 +126,59 @@ var Log = function () {
     ]
     }
   });
+  
+  this.perf2ChartCanvas = document.getElementById("perf2Chart");
+  this.perf2Chart = new Chart(this.perf2ChartCanvas, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "White nb of states explored",
+          fill: false,
+          lineTension: 0.1,
+          backgroundColor: "rgba(255, 255, 255, 0.4)",
+          borderColor: "rgb(200, 200, 200)",
+          borderCapStyle: 'butt',
+          borderDash: [],
+          borderDashOffset: 0.0,
+          borderJoinStyle: 'miter',
+          pointBorderColor: "rgb(200, 200, 200)",
+          pointBackgroundColor: "#fff",
+          pointBorderWidth: 1,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: "rgb(255, 255, 255)",
+          pointHoverBorderColor: "rgba(200,200,200,1)",
+          pointHoverBorderWidth: 2,
+          pointRadius: 3,
+          pointHitRadius: 10,
+          data: [],
+          spanGaps: false
+      },{
+          label: "Black nb of states explored",
+          fill: false,
+          lineTension: 0.1,
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          borderColor: "rgb(200, 200, 200)",
+          borderCapStyle: 'butt',
+          borderDash: [],
+          borderDashOffset: 0.0,
+          borderJoinStyle: 'miter',
+          pointBorderColor: "rgb(200, 200, 200)",
+          pointBackgroundColor: "#000",
+          pointBorderWidth: 1,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: "rgb(0, 0, 0)",
+          pointHoverBorderColor: "rgba(200,200,200,1)",
+          pointHoverBorderWidth: 2,
+          pointRadius: 3,
+          pointHitRadius: 10,
+          data: [],
+          spanGaps: false
+      }
+    ]
+    }
+  });
 };
 
 Log.prototype.addState = function (state) {
@@ -129,6 +194,21 @@ Log.prototype.printHistory = function () {
 };
 
 Log.prototype.clear = function () {
+  this.pawnsChart.data.datasets[0].data = [12];
+  this.pawnsChart.data.datasets[1].data = [12];
+  this.pawnsChart.data.labels = [0];
+  this.pawnsChart.update();
+  
+  this.perfChart.data.datasets[0].data = [];
+  this.perfChart.data.datasets[1].data = [];
+  this.perfChart.data.labels = [];
+  this.perfChart.update();  
+  
+  this.perf2Chart.data.datasets[0].data = [];
+  this.perf2Chart.data.datasets[1].data = [];
+  this.perf2Chart.data.labels = [];
+  this.perf2Chart.update();  
+  
   $('#history').empty();
 };
 
@@ -173,4 +253,9 @@ Log.prototype.updateCharts = function (state, id) {
   this.perfChart.data.datasets[1].data[id] = state.blackExecutionTime;
   this.perfChart.data.labels[id] = id % 10 === 0 ? id : "";
   this.perfChart.update();  
+  
+  this.perf2Chart.data.datasets[0].data[id] = state.whiteCountedStates;
+  this.perf2Chart.data.datasets[1].data[id] = state.blackCountedStates;
+  this.perf2Chart.data.labels[id] = id % 10 === 0 ? id : "";
+  this.perf2Chart.update();  
 };

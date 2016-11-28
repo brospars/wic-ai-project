@@ -19,6 +19,8 @@ var Game = function(){
   this.timeouts = [];
   this.whiteExecutionTime = 0;
   this.blackExecutionTime = 0;
+  this.whiteCountedStates = 0;
+  this.blackCountedStates = 0;
   this.log = new Log();
 };
 
@@ -79,6 +81,8 @@ Game.prototype.startTurn = function(){
       var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
       
       this.whiteExecutionTime = new Date().getTime() - startTime;
+      this.whiteCountedStates = ia.countedStates;
+      
       this.doMove(move);
     }else if(this.currentTurn == "BLACK" && options.blackIAEnabled){
       var startTime = new Date().getTime();
@@ -87,6 +91,8 @@ Game.prototype.startTurn = function(){
       var move = ia.calculateNextMove(this.gameboard.board, this.currentTurn);
       
       this.blackExecutionTime = new Date().getTime() - startTime;
+      this.blackCountedStates = ia.countedStates;
+      
       this.doMove(move);
     }else{
       this.currentTurnMoves = getTurnPossibleMoves(cloneBoard(this.gameboard.board),this.currentTurn);
@@ -123,7 +129,9 @@ Game.prototype.endTurn = function(){
     blackPawns : this.blackPawns,
     whitePawns : this.whitePawns,
     whiteExecutionTime : this.whiteExecutionTime,
-    blackExecutionTime : this.blackExecutionTime
+    blackExecutionTime : this.blackExecutionTime,
+    whiteCountedStates : this.whiteCountedStates,
+    blackCountedStates : this.blackCountedStates
   });
     
   if(this.blackPawns < 1){
