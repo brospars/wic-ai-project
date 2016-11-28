@@ -83,6 +83,11 @@ h3{
   min-width: 320px;
 }
 
+.btn-default {
+    width: 45%;
+    margin: 2%;
+}
+
 label{
 }
 

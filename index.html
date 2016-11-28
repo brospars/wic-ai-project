@@ -40,6 +40,7 @@
             <button id="newGame" class="btn btn-default">New Game</button>
             <button id="startGame" class="btn btn-default">Start Game</button>
             <button id="pauseGame" class="btn btn-default">Pause Game</button>
+            <button id="nextStep" class="btn btn-default">Next Step</button>
           </li>
         </div>
         <div class="settings">
@@ -91,7 +92,7 @@
     var options = {
       whiteIAEnabled : true,
       blackIAEnabled : true,
-      whiteIAMode : "RANDOM",
+      whiteIAMode : "EATFIRST",
       blackIAMode : "ALPHA-BETA PRUNING",
       whiteIADepth : 4,
       blackIADepth : 4,
@@ -162,6 +163,12 @@
 
       //pause game
       $('#pauseGame').click(function(){
+        game.pause();
+      });
+
+      //next step in the game
+      $('#nextStep').click(function(){
+        game.start();
         game.pause();
       });
 

@@ -14,7 +14,7 @@ var IA = function (mode,playerColor) {
   this.opponentColor = (this.playerColor == "WHITE") ? "BLACK":"WHITE";
 };
 
-IA.prototype.calculateNextMove = function (board,turn,moves) {
+IA.prototype.calculateNextMove = function (board,turn,moves,isRebound) {
   var starttime = new Date().getTime();
   var turn = turn;
   var virtualBoard = cloneBoard(board);
@@ -25,8 +25,14 @@ IA.prototype.calculateNextMove = function (board,turn,moves) {
   } else if (this.mode == "EATFIRST") {
     return this.getMoveEatFirst(turnPossibleMoves);
   }else if (this.mode == "MINIMAX") {
+    if(isRebound){
+      return this.getMoveEatFirst(turnPossibleMoves);
+    }
     return this.getMoveMiniMax(virtualBoard,turnPossibleMoves,turn);
   }else if (this.mode == "ALPHA-BETA PRUNING") {
+    if(isRebound){
+      return this.getMoveEatFirst(turnPossibleMoves);
+    }
     return this.getMoveAlphaBeta(virtualBoard,turnPossibleMoves,turn);
   }else{ //default return random
     return this.getMoveRandom(turnPossibleMoves);
@@ -69,11 +75,12 @@ IA.prototype.getMoveEatFirst = function (turnPossibleMoves) {
 IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
   var ia = this;
   var maxDepth = (this.playerColor == "WHITE") ? options.whiteIADepth : options.blackIADepth;
+  var bestSoFar = -999;
   var chosenMoves = [];
   var countCalculs = 0;
 
   max(0,board,turnPossibleMoves,turn);
-  var chosenMove = chosenMoves[getRandomInt(0,chosenMoves.length)];
+  var chosenMove = chosenMoves[getRandomInt(0,chosenMoves.length)].move;
 
   return chosenMove;
 
@@ -102,7 +109,11 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
             max = val;
             //Push to choseMoves if it's next move (aka depth = 0)
             if(depth == 0){
-              chosenMoves.push(move);
+              if(val > bestSoFar){
+                  bestSoFar = val;
+                  chosenMoves = [];
+              }
+              chosenMoves.push({move:move,val:val});
             }
           }
         }
@@ -110,7 +121,8 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
 
       return max;
     }else{
-      return eval(board);
+      
+      return ia.eval(board);
     }
   }
 
@@ -142,16 +154,7 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
 
       return min;
     }else{
-      return eval(board);
-    }
-  }
-
-  function eval(board){
-    var scores = countScores(board);
-    if(ia.playerColor == "WHITE"){
-      return scores["WHITE"]-scores["BLACK"];
-    }else{
-      return scores["BLACK"]-scores["WHITE"];
+      return ia.eval(board);
     }
   }
 };
@@ -159,6 +162,7 @@ IA.prototype.getMoveMiniMax = function (board,turnPossibleMoves,turn) {
 IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
   var ia = this;
   var maxDepth = (this.playerColor == "WHITE") ? options.whiteIADepth : options.blackIADepth;
+  var bestSoFar = -999;
   var chosenMoves = [];
   var alpha = -999;
   var beta = 999;
@@ -167,19 +171,28 @@ IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
 
   // We run the reccursive algorythm for the current board
   alphabeta(0,board,turnPossibleMoves,turn, alpha, beta);
-  var chosenMove = chosenMoves[getRandomInt(0,chosenMoves.length)];
+  var chosenMove = chosenMoves[getRandomInt(0,chosenMoves.length)].move;
+  //console.log(chosenMoves);
+  
+  var nbPossibles = 0;
+  
+  for(var indexOrigin in turnPossibleMoves){
+    for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
+      nbPossibles++;
+    }
+  }
 
-  console.log("Number of calculs in Alpha-Beta Prunning "+ countCalculs);
+  /*console.log("Number of calculs in Alpha-Beta Prunning "+ countCalculs);
   console.log("Number of Pruning : " + countPruning);
+  console.log("Number of Possible moves,candidat moves : ",nbPossibles,chosenMoves.length);*/
   return chosenMove;
 
   function alphabeta(depth, board, turnPossibleMoves, turn, alpha, beta){
-    if(depth == maxDepth-1){
-      return eval(board) //If we are on a leaf, we return the value
+    if(depth == maxDepth){
+      return ia.eval(board) //If we are on a leaf, we return the value
     } else {
       if (depth%2 != 0) { //if we are on Minimize node for all children we do
         var val = 999;
-        //console.log("Minimize node level : " + depth );
         for(var indexOrigin in turnPossibleMoves){
           for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
             var move = {
@@ -193,10 +206,8 @@ IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
             var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
 
             countCalculs++;
-            //console.log("Val before min : " + val);
-            //console.log("ab before Min (depth " + depth + ", alpha : " + alpha + "beta : " + beta + "): " + alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
             val = Math.min(val, alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
-            //console.log("Val after min: " + val + " alpha : " + alpha );
+            
             if(alpha >= val){ //If alpha lower than val min we're alphaPrunning and return val
               countPruning++;
               return val;
@@ -205,7 +216,6 @@ IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
           }
         }
       } else { // If we're not on minimize node we are on maximize node
-        //console.log("Maximize node level :" + depth );
         var val = -999;
         for(var indexOrigin in turnPossibleMoves){
           for(var indexTarget in turnPossibleMoves[indexOrigin].targets){
@@ -220,34 +230,29 @@ IA.prototype.getMoveAlphaBeta = function (board,turnPossibleMoves,turn) {
             var nextMoves = getTurnPossibleMoves(nextBoard,nextTurn);
 
             countCalculs++;
-            //console.log("Max val :" + val);
-            //console.log("ab before Max : " + alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
-            val = Math.max(val, alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta));
-            //console.log("val after Max : " + val + " beta " + beta);
+            
+            var recursiveVal = alphabeta(depth+1,nextBoard,nextMoves,nextTurn, alpha, beta);             
+            if(recursiveVal >= val){
+              val = recursiveVal;
+              if(depth == 0){
+                if(val > bestSoFar){
+                  bestSoFar = val;
+                  chosenMoves = [];
+                }
+                chosenMoves.push({move:move,val:val});
+              }
+            }
+            
             if(val >= beta){ //if value in max greater or egal than beta so we're betaPrunning and return val
               countPruning++;
               return val;
-            }
-            //console.log("val " + val + " | alpha : " + alpha);
-            if(depth == 0){
-              //console.log("we have a move ");
-              chosenMoves.push(move);
-            }
+            }            
             alpha = Math.max(alpha,val); //We update the value of the minimize node
           }
         }
       }
 
       return val;
-    }
-  }
-
-  function eval(board){
-    var scores = countScores(board);
-    if(ia.playerColor == "WHITE"){
-      return scores["WHITE"]-scores["BLACK"];
-    }else{
-      return scores["BLACK"]-scores["WHITE"];
     }
   }
 };
@@ -263,12 +268,42 @@ IA.prototype.simulateTurn = function (board, move, turn) {
   if(move.target.isEatMove){
     var eaten = board[move.target.toBeEatenNode.y][move.target.toBeEatenNode.x];
     delete eaten.pawn;
+    
+    this.simulateRebound(board,target);
   }
-
+  
   turn = (turn == "WHITE") ? "BLACK":"WHITE";
 
   return {
     board:board,
     turn:turn
   };
+};
+
+IA.prototype.simulateRebound = function (board, bouncingPawn) {
+  var targets = getPawnPossibleMoves(board,board[bouncingPawn.y][bouncingPawn.x],true);
+  if(targets.length > 0){
+    var board = cloneBoard(board);
+    var origin = board[bouncingPawn.y][bouncingPawn.x];
+    var target = board[targets[0].y][targets[0].x];
+    
+    target.pawn = origin.pawn;
+    delete origin.pawn;
+    
+    var eaten = board[targets[0].toBeEatenNode.y][targets[0].toBeEatenNode.x];
+    delete eaten.pawn;
+    
+    board = this.simulateRebound(board,target);
+  }else{
+    return board;
+  }
+};
+
+IA.prototype.eval = function(board){
+  var scores = countPawns(board);
+  if(this.playerColor == "WHITE"){
+    return -scores["BLACK"];
+  }else{
+    return -scores["WHITE"];
+  }
 };

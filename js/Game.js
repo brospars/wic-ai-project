@@ -101,11 +101,11 @@ Game.prototype.startRebound = function(moves){
   
   if(this.currentTurn == "WHITE" && options.whiteIAEnabled){
     var ia = new IA(options.whiteIAMode, this.currentTurn);
-    var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves);
+    var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves,true);
     game.doMove(move);       
   }else if(this.currentTurn == "BLACK" && options.blackIAEnabled){
     var ia = new IA(options.blackIAMode, this.currentTurn);
-    var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves);
+    var move = ia.calculateNextMove(game.gameboard.board, game.currentTurn, moves,true);
     game.doMove(move);
   }else{
     this.currentTurnMoves = moves;
