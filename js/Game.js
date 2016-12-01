@@ -215,10 +215,13 @@ Game.prototype.getMove = function(origin,target){
 
 // popup to annouce who win
 Game.prototype.endGame = function(color){
-  if(options.multiGamesEnabled && options.nbGames>0){
+  if(options.multiGamesEnabled && options.nbGames>1){
     countWin(color);
     options.nbGames--;
     newGameAuto();
+  } else if(options.multiGamesEnabled){
+    countWin(color);
+    alert('Games : ' + stats.games + ' | White Wins : ' + stats.whiteWin + ' | Black Wins : ' + stats.blackWin);
   } else {
     alert(color+' wins !');
   }

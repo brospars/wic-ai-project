@@ -162,7 +162,7 @@ function countWin(color){
   if (color == "WHITE") {
     stats.whiteWin++;
   } else {
-    stats.blackWins++;
+    stats.blackWin++;
   }
 }
 
