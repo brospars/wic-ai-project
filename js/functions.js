@@ -156,6 +156,25 @@ function countScores(board) {
   return scores;
 }
 
+//Function Count winning parties 
+function countWin(color){
+  stats.nbGames++;
+  if (color == "WHITE") {
+    stats.whiteWin++;
+  } else {
+    stats.blackWins++;
+  }
+}
+
+function newGameAuto(){
+  svg.clear();
+  svg = Snap('#board');
+  game.destroy();
+  game = new Game();
+  game.init();
+  game.start();
+}
+
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);

@@ -215,7 +215,13 @@ Game.prototype.getMove = function(origin,target){
 
 // popup to annouce who win
 Game.prototype.endGame = function(color){
-  alert(color+' wins !');
+  if(options.multiGamesEnabled && options.nbGames>0){
+    countWin(color);
+    options.nbGames--;
+    newGameAuto();
+  } else {
+    alert(color+' wins !');
+  }
 };
 
 // clear all event and timeouts, then destroy himself

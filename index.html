@@ -26,6 +26,7 @@
       <li role="presentation" class="active"><a href="#game" aria-controls="game" role="tab" data-toggle="tab">Game</a></li>
       <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">History</a></li>
       <li role="presentation"><a href="#charts" aria-controls="charts" role="tab" data-toggle="tab">Charts</a></li>
+      <li role="presentation"><a href="#multigames" aria-controls="multigames" role="tab" data-toggle="tab">MultiGames</a></li>
     </ul>
 
     <!-- Tab panes -->
@@ -41,10 +42,16 @@
             <button id="startGame" class="btn btn-default">Start Game</button>
             <button id="pauseGame" class="btn btn-default">Pause Game</button>
             <button id="nextStep" class="btn btn-default">Next Step</button>
+            <button id="runMultiGames" class="btn btn-default">Run MultiGames</button>
           </li>
         </div>
         <div class="settings">
           <h3>Settings : </h3>
+          <li>
+            <label>Nb Games :</label>
+            <input id="multiGamesEnabled" type="checkbox"/>
+            <input id="nbGames" type="text"/> games
+          </li>
           <li>
             <label>Speed :</label>
             <input id="speed" type="text"/> ms
@@ -88,16 +95,24 @@
   <script src="js/IA.js"></script>
   <script>
     var svg = Snap('#board');
+    var stats = {
+      nbGames : 0,
+      whiteWin : 0,
+      blackWin : 0
+    };
+
     var game = new Game();
 
     var options = {
+      multiGamesEnabled : true,
       whiteIAEnabled : true,
       blackIAEnabled : true,
       whiteIAMode : "EATFIRST",
       blackIAMode : "ALPHA-BETA PRUNING",
       whiteIADepth : 4,
       blackIADepth : 4,
-      speed : 50,
+      nbGames : 10,
+      speed : 49,
       movesVector : {
         'NORTH' : { x: 0, y: -1},
         'EAST' : { x: 1, y: 0},
@@ -122,8 +137,10 @@
     $(document).ready(function(){
 
       // Init inputs to default parameters
+      $("#multiGamesEnabled").prop('checked', options.multiGamesEnabled);
       $("#whiteIAEnabled").prop('checked', options.whiteIAEnabled);
       $("#blackIAEnabled").prop('checked', options.blackIAEnabled);
+      $("#nbGames").val(options.nbGames);
       $("#speed").val(options.speed);
       $("#whiteIADepth").val(options.whiteIADepth);
       $("#blackIADepth").val(options.blackIADepth);
@@ -137,6 +154,7 @@
 
       //When settings change update options
       $('input, select').on('change',function(){
+          options.multiGamesEnabled = $("#multiGamesEnabled").prop('checked');
           options.whiteIAEnabled = $("#whiteIAEnabled").prop('checked');
           options.blackIAEnabled = $("#blackIAEnabled").prop('checked');
           options.whiteIAMode = $("#whiteIAMode").val();
@@ -144,6 +162,7 @@
           options.whiteIADepth = parseInt($("#whiteIADepth").val());
           options.blackIADepth = parseInt($("#blackIADepth").val());
           options.speed = parseInt($("#speed").val());
+          options.nbGames = parseInt($("#nbGames ").val());
 
           console.log(options);
       });
@@ -175,6 +194,11 @@
 
       //init the game
       game.init();
+
+      //Run Multi Games : 
+      $('#runMultiGames').click(function(){
+          newGameAuto();
+      });
 
     });
   </script>
